@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FP&amp;A Monthly Cycle — Mockup for Malindi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&family=Hanken+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #F4F1E8;
+    --paper-tint: #ECE7D7;
+    --ink: #1A2238;
+    --ink-soft: #3A4257;
+    --ink-faint: #6B7080;
+    --rule: #C9C2AE;
+    --rule-soft: #DAD4C0;
+    --accent: #8B2C2C;
+    --accent-deep: #6B1F1F;
+    --accent-soft: #A85050;
+    --olive: #6B6E48;
+    --olive-soft: #8A8D6C;
+    --gold: #B08A3E;
+    --bma-blue: #306CC0;
+    --bma-accent: #D8306C;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Hanken Grotesk', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at top left, rgba(176,138,62,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(139,44,44,0.03) 0%, transparent 60%),
+      var(--paper);
+    background-attachment: fixed;
+  }
+
+  /* subtle paper grain */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.35;
+    background-image:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.13 0 0 0 0 0.22 0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    mix-blend-mode: multiply;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 2;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 56px 64px 96px;
+  }
+
+  /* ============== MASTHEAD ============== */
+  .masthead {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    padding-bottom: 28px;
+    border-bottom: 1.5px solid var(--ink);
+    margin-bottom: 18px;
+  }
+
+  .masthead-title {
+    font-family: 'Newsreader', serif;
+    font-weight: 500;
+    font-size: 44px;
+    line-height: 1;
+    letter-spacing: -0.015em;
+    font-variation-settings: "opsz" 48;
+  }
+
+  .masthead-title em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+
+  .masthead-meta {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    line-height: 1.7;
+  }
+
+  .masthead-meta .label { color: var(--ink-faint); }
+  .masthead-meta .value { color: var(--ink); font-weight: 500; }
+
+  /* second rule, hairline */
+  .double-rule {
+    height: 1px;
+    background: var(--ink);
+    margin-bottom: 36px;
+  }
+
+  /* ============== STEPPER ============== */
+  .stepper {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    margin-bottom: 56px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .step {
+    padding: 16px 18px;
+    border-right: 1px solid var(--rule-soft);
+    cursor: pointer;
+    transition: background 160ms ease;
+    position: relative;
+  }
+  .step:last-child { border-right: none; }
+  .step:hover { background: var(--paper-tint); }
+
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  .step-label {
+    font-family: 'Newsreader', serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.15;
+    font-variation-settings: "opsz" 18;
+  }
+
+  .step.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .step.active .step-num { color: var(--paper-tint); }
+  .step.active .step-label { color: var(--paper); }
+  .step.complete .step-num { color: var(--accent); }
+  .step.complete .step-num::before { content: "✓ "; font-family: 'Hanken Grotesk', sans-serif; }
+
+  /* ============== SCREEN LAYOUT ============== */
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn 320ms ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .screen-grid {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 56px;
+    align-items: start;
+  }
+
+  /* ============== SCREEN HEADER ============== */
+  .screen-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  .screen-title {
+    font-family: 'Newsreader', serif;
+    font-weight: 400;
+    font-size: 56px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+    margin-bottom: 16px;
+    font-variation-settings: "opsz" 60;
+  }
+
+  .screen-title em { font-style: italic; color: var(--accent); }
+
+  .screen-lede {
+    font-family: 'Newsreader', serif;
+    font-size: 19px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    max-width: 56ch;
+    margin-bottom: 40px;
+    font-style: italic;
+    font-variation-settings: "opsz" 20;
+  }
+
+  /* ============== MARGIN NOTES ============== */
+  .margin {
+    padding-top: 12px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .margin-section {
+    margin-bottom: 28px;
+  }
+
+  .margin-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+  }
+
+  .margin-body {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  .margin-body strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .ac-chip {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: var(--paper-tint);
+    border: 1px solid var(--rule);
+    padding: 2px 7px;
+    margin: 2px 4px 2px 0;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+  }
+
+  /* ============== DROP ZONE (screen 1) ============== */
+  .dropzone {
+    border: 1.5px dashed var(--rule);
+    background: linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0.1));
+    padding: 56px 40px;
+    text-align: center;
+    margin-bottom: 32px;
+    position: relative;
+    transition: all 200ms ease;
+    cursor: pointer;
+  }
+
+  .dropzone:hover {
+    border-color: var(--accent);
+    background: linear-gradient(180deg, rgba(255,255,255,0.7), rgba(245,240,230,0.3));
+  }
+
+  .dropzone-icon {
+    font-family: 'Newsreader', serif;
+    font-size: 64px;
+    line-height: 1;
+    color: var(--accent);
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+
+  .dropzone-title {
+    font-family: 'Newsreader', serif;
+    font-size: 22px;
+    margin-bottom: 6px;
+  }
+
+  .dropzone-sub {
+    color: var(--ink-faint);
+    font-size: 14px;
+  }
+
+  .dropzone-uploaded {
+    border-color: var(--olive);
+    background: rgba(107,110,72,0.05);
+    cursor: default;
+  }
+
+  .dropzone-uploaded .dropzone-icon { color: var(--olive); }
+
+  .file-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .file-meta-divider {
+    color: var(--rule);
+  }
+
+  /* ============== FIELDS ============== */
+  .field-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 24px;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .field-row:first-of-type { border-top: 1px solid var(--rule-soft); }
+
+  .field-label {
+    font-family: 'Newsreader', serif;
+    font-size: 16px;
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+
+  .field-control {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+  }
+
+  select, input[type=text] {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--ink-soft);
+    padding: 4px 0;
+    color: var(--ink);
+    outline: none;
+    min-width: 220px;
+  }
+
+  select:focus, input:focus { border-bottom-color: var(--accent); }
+
+  /* ============== ACTION BAR ============== */
+  .action-bar {
+    margin-top: 48px;
+    padding-top: 28px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .btn {
+    font-family: 'Hanken Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 14px 28px;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: all 180ms ease;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--paper);
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-deep);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--rule);
+  }
+
+  .btn-secondary:hover {
+    color: var(--ink);
+    border-color: var(--ink-soft);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-faint);
+    padding: 14px 0;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+  }
+
+  .btn-ghost:hover { color: var(--accent); }
+
+  /* ============== STATUS LINES (screen 2) ============== */
+  .status-block {
+    margin-bottom: 28px;
+    padding: 24px 28px;
+    background: rgba(255,255,255,0.45);
+    border-left: 3px solid var(--olive);
+  }
+
+  .status-block.pending { border-left-color: var(--gold); }
+  .status-block.error { border-left-color: var(--accent); }
+
+  .status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+  }
+
+  .status-name {
+    font-family: 'Newsreader', serif;
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  .status-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--olive);
+  }
+
+  .status-block.pending .status-tag { color: var(--gold); }
+
+  .progress-track {
+    height: 2px;
+    background: var(--rule-soft);
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--olive);
+    transition: width 400ms ease;
+  }
+
+  .status-block.pending .progress-fill {
+    background: var(--gold);
+    width: 65%;
+    animation: pulse-pending 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-pending {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+
+  .status-detail {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+  }
+
+  .status-detail .num { color: var(--ink); font-weight: 500; }
+
+  /* ============== ACCOUNT RECONCILIATION (screen 3) ============== */
+  .reconcile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-bottom: 32px;
+  }
+
+  .reconcile-panel {
+    background: rgba(255,255,255,0.45);
+    padding: 24px;
+  }
+
+  .reconcile-panel.warning {
+    background: rgba(139,44,44,0.04);
+    border-left: 3px solid var(--accent);
+  }
+
+  .reconcile-panel.matched {
+    border-left: 3px solid var(--olive);
+  }
+
+  .reconcile-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .reconcile-title {
+    font-family: 'Newsreader', serif;
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  .reconcile-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .reconcile-panel.matched .reconcile-count { color: var(--olive); }
+  .reconcile-panel.warning .reconcile-count { color: var(--accent); }
+
+  .acct-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px dotted var(--rule-soft);
+    align-items: center;
+  }
+
+  .acct-row:last-child { border-bottom: none; }
+
+  .acct-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--ink);
+  }
+
+  .acct-target {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+
+  .acct-action {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: transparent;
+    border: 1px solid var(--rule);
+    padding: 3px 9px;
+    cursor: pointer;
+    color: var(--ink-soft);
+  }
+
+  .acct-action:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .unmatched-item {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .unmatched-item:last-child { border-bottom: none; }
+
+  .unmatched-q {
+    font-family: 'Newsreader', serif;
+    font-style: italic;
+    font-size: 15px;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+
+  .unmatched-q .acct {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: normal;
+    background: rgba(139,44,44,0.08);
+    padding: 1px 6px;
+    color: var(--accent);
+    font-size: 12px;
+  }
+
+  .unmatched-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    align-items: center;
+  }
+
+  .unmatched-controls select {
+    font-size: 12px;
+    min-width: 180px;
+  }
+
+  /* ============== NARRATIVE (screen 4) ============== */
+  .narrative-grid {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 36px;
+    align-items: start;
+  }
+
+  .narrative-editor {
+    background: rgba(255,255,255,0.55);
+    border-left: 3px solid var(--ink);
+    padding: 32px 40px;
+    position: relative;
+  }
+
+  .narrative-tools {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .narrative-tools-left {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .narrative-tools-left .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .narrative-tools button {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: transparent;
+    border: 1px solid var(--rule);
+    padding: 5px 10px;
+    cursor: pointer;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+
+  .narrative-tools button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .narrative-text {
+    font-family: 'Newsreader', serif;
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--ink);
+    outline: none;
+    min-height: 280px;
+    font-variation-settings: "opsz" 18;
+  }
+
+  .narrative-text p { margin-bottom: 14px; }
+  .narrative-text p:last-child { margin-bottom: 0; }
+
+  .narrative-text strong {
+    font-weight: 600;
+  }
+
+  .narrative-text em {
+    color: var(--accent);
+  }
+
+  /* ============== METRICS SIDEBAR ============== */
+  .metrics-card {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 28px 24px;
+  }
+
+  .metrics-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--paper-tint);
+    margin-bottom: 18px;
+    opacity: 0.7;
+  }
+
+  .metric {
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(244,241,232,0.15);
+  }
+  .metric:last-child { border-bottom: none; }
+
+  .metric-label {
+    font-family: 'Hanken Grotesk', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--paper-tint);
+    opacity: 0.7;
+    margin-bottom: 4px;
+  }
+
+  .metric-value {
+    font-family: 'Newsreader', serif;
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .metric-delta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    margin-top: 4px;
+  }
+
+  .metric-delta.up { color: #C9D6A0; }
+  .metric-delta.down { color: var(--accent-soft); }
+
+  /* ============== DOWNLOADS (screen 5) ============== */
+  .downloads-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .download-card {
+    background: rgba(255,255,255,0.55);
+    padding: 36px 28px 28px;
+    border: 1px solid var(--rule);
+    text-align: left;
+    transition: all 220ms ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .download-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px -16px rgba(26,34,56,0.18);
+  }
+
+  .download-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 60%, rgba(139,44,44,0.04));
+    pointer-events: none;
+  }
+
+  .download-icon {
+    font-family: 'Newsreader', serif;
+    font-style: italic;
+    font-size: 36px;
+    color: var(--accent);
+    margin-bottom: 18px;
+    line-height: 1;
+  }
+
+  .download-name {
+    font-family: 'Newsreader', serif;
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .download-filename {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+    word-break: break-all;
+  }
+
+  .download-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    line-height: 1.7;
+    padding-top: 12px;
+    border-top: 1px solid var(--rule-soft);
+  }
+
+  .download-meta .row {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .complete-summary {
+    margin-top: 16px;
+    padding: 24px 28px;
+    background: rgba(107,110,72,0.06);
+    border-left: 3px solid var(--olive);
+  }
+
+  .complete-summary .h {
+    font-family: 'Newsreader', serif;
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+
+  .complete-summary .p {
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+
+  /* ============== FOOTER ============== */
+  .colophon {
+    margin-top: 96px;
+    padding-top: 32px;
+    border-top: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 32px;
+    color: var(--ink-faint);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .colophon-left {
+    font-family: 'Newsreader', serif;
+    font-style: italic;
+    font-size: 13px;
+    max-width: 56ch;
+  }
+
+  .colophon-right {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  .colophon-right .bma-mark {
+    color: var(--bma-blue);
+    font-weight: 600;
+  }
+  .colophon-right .bma-mark span { color: var(--bma-accent); }
+
+  /* small responsive guardrail */
+  @media (max-width: 1000px) {
+    .wrap { padding: 32px 24px 64px; }
+    .screen-grid, .narrative-grid { grid-template-columns: 1fr; gap: 32px; }
+    .masthead-title { font-size: 32px; }
+    .screen-title { font-size: 40px; }
+    .reconcile-grid, .downloads-grid { grid-template-columns: 1fr; }
+    .stepper { grid-template-columns: 1fr; }
+    .step { border-right: none; border-bottom: 1px solid var(--rule-soft); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ MASTHEAD ============ -->
+  <header class="masthead">
+    <div>
+      <div class="masthead-title">FP&amp;A <em>Monthly</em> Cycle</div>
+    </div>
+    <div class="masthead-meta">
+      <div><span class="label">Operator</span> &nbsp; <span class="value">Malindi</span></div>
+      <div><span class="label">Period</span> &nbsp; <span class="value">April 2026</span></div>
+      <div><span class="label">Mockup</span> &nbsp; <span class="value">v1 / 2026-05-13</span></div>
+    </div>
+  </header>
+  <div class="double-rule"></div>
+
+  <!-- ============ STEPPER ============ -->
+  <nav class="stepper" id="stepper">
+    <div class="step active" data-step="1">
+      <div class="step-num">01</div>
+      <div class="step-label">Upload &amp; configure</div>
+    </div>
+    <div class="step" data-step="2">
+      <div class="step-num">02</div>
+      <div class="step-label">Acquire data</div>
+    </div>
+    <div class="step" data-step="3">
+      <div class="step-num">03</div>
+      <div class="step-label">Reconcile accounts</div>
+    </div>
+    <div class="step" data-step="4">
+      <div class="step-num">04</div>
+      <div class="step-label">Review narrative</div>
+    </div>
+    <div class="step" data-step="5">
+      <div class="step-num">05</div>
+      <div class="step-label">Outputs ready</div>
+    </div>
+  </nav>
+
+  <!-- ============ SCREEN 1: UPLOAD ============ -->
+  <section class="screen active" data-screen="1">
+    <div class="screen-grid">
+      <main>
+        <div class="screen-eyebrow">Step 01 / Begin a monthly cycle</div>
+        <h1 class="screen-title">Upload your <em>QuickBooks</em> export.</h1>
+        <p class="screen-lede">Drop your monthly QuickBooks export and confirm the reporting period. We&rsquo;ll fetch Shopify data on the next screen.</p>
+
+        <div class="dropzone" onclick="this.classList.add('dropzone-uploaded'); document.getElementById('dz-content').innerHTML = `
+          <div class='dropzone-icon'>&#10003;</div>
+          <div class='dropzone-title'>QB_Export_April2026.xlsx</div>
+          <div class='dropzone-sub'>Uploaded just now</div>
+          <div class='file-meta'><span>3,142 rows</span><span class='file-meta-divider'>·</span><span>847 KB</span><span class='file-meta-divider'>·</span><span>13 sheets detected</span></div>
+        `; ">
+          <div id="dz-content">
+            <div class="dropzone-icon">&#43;</div>
+            <div class="dropzone-title">Drop a QuickBooks export here</div>
+            <div class="dropzone-sub">or click to browse &nbsp; · &nbsp; .xlsx files only</div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-label">Reporting month</div>
+          <div class="field-control">
+            <select>
+              <option>April 2026</option>
+              <option>March 2026</option>
+              <option>February 2026</option>
+              <option>January 2026</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">FP&amp;A target workbook</div>
+          <div class="field-control">
+            <select>
+              <option>FPA_Master_v18.xlsx &nbsp; — &nbsp; 13 tabs</option>
+              <option>FPA_Master_v17.xlsx &nbsp; — &nbsp; 13 tabs</option>
+              <option>Choose another&hellip;</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Shopify pull on continue</div>
+          <div class="field-control">
+            <select>
+              <option>Yes &nbsp; — &nbsp; new orders, repeat orders, AOV, inventory</option>
+              <option>No &nbsp; — &nbsp; skip Shopify this cycle</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="action-bar">
+          <button class="btn btn-ghost" onclick="goStep(1)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goStep(2)">Begin processing</button>
+        </div>
+      </main>
+
+      <aside class="margin">
+        <div class="margin-section">
+          <div class="margin-eyebrow">What this step does</div>
+          <p class="margin-body">Reads your QuickBooks export into memory and stages the monthly target workbook for update. <strong>No data is written</strong> until you confirm account mappings two screens from now.</p>
+        </div>
+        <div class="margin-section">
+          <div class="margin-eyebrow">Acceptance criteria</div>
+          <div>
+            <span class="ac-chip">AC 1 · upload</span>
+            <span class="ac-chip">AC 15 · single-user auth</span>
+          </div>
+        </div>
+        <div class="margin-section">
+          <div class="margin-eyebrow">Time estimate</div>
+          <p class="margin-body">Under 10 seconds for a typical 3,000-row export.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 2: DATA ACQUISITION ============ -->
+  <section class="screen" data-screen="2">
+    <div class="screen-grid">
+      <main>
+        <div class="screen-eyebrow">Step 02 / Acquire data</div>
+        <h1 class="screen-title">Reading your <em>QuickBooks</em> and pulling <em>Shopify</em>.</h1>
+        <p class="screen-lede">Two parallel jobs. The QuickBooks parse is finished; Shopify is fetching the four metric categories for your selected month.</p>
+
+        <div class="status-block">
+          <div class="status-header">
+            <div class="status-name">QuickBooks parse</div>
+            <div class="status-tag">Complete</div>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:100%"></div></div>
+          <div class="status-detail">
+            File: <span class="num">QB_Export_April2026.xlsx</span> &nbsp; · &nbsp;
+            Rows parsed: <span class="num">3,142</span> &nbsp; · &nbsp;
+            GL accounts detected: <span class="num">187</span> &nbsp; · &nbsp;
+            Elapsed: <span class="num">2.4s</span>
+          </div>
+        </div>
+
+        <div class="status-block pending">
+          <div class="status-header">
+            <div class="status-name">Shopify Admin API pull</div>
+            <div class="status-tag">In progress</div>
+          </div>
+          <div class="progress-track"><div class="progress-fill"></div></div>
+          <div class="status-detail">
+            New orders: <span class="num">1,247</span> &nbsp; · &nbsp;
+            Repeat orders: <span class="num">892</span> &nbsp; · &nbsp;
+            AOV: <span class="num">$189.42</span> &nbsp; · &nbsp;
+            Inventory units: <span class="num">14,820</span> <span style="color:var(--gold);">(fetching&hellip;)</span>
+          </div>
+        </div>
+
+        <div class="action-bar">
+          <button class="btn btn-ghost" onclick="goStep(1)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goStep(3)">Continue once both complete</button>
+        </div>
+      </main>
+
+      <aside class="margin">
+        <div class="margin-section">
+          <div class="margin-eyebrow">What this step does</div>
+          <p class="margin-body">Parses your QuickBooks file and pulls the four Shopify metric categories for the selected month. We never modify your source files or your Shopify data.</p>
+        </div>
+        <div class="margin-section">
+          <div class="margin-eyebrow">Acceptance criteria</div>
+          <div>
+            <span class="ac-chip">AC 2 · Shopify pull</span>
+            <span class="ac-chip">AC 3 · four metric categories</span>
+          </div>
+        </div>
+        <div class="margin-section">
+          <div class="margin-eyebrow">Why parallel</div>
+          <p class="margin-body">Shopify rate limits cap the API at modest speeds. We start it the moment you click Continue on the previous screen, so the file parse is usually done before Shopify finishes.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 3: ACCOUNT RECONCILIATION ============ -->
+  <section class="screen" data-screen="3">
+    <div class="screen-grid">
+      <main>
+        <div class="screen-eyebrow">Step 03 / Reconcile accounts</div>
+        <h1 class="screen-title">Three accounts need <em>your eyes</em> before we write.</h1>
+        <p class="screen-lede">183 of 186 GL accounts map cleanly by name. Three new or renamed accounts surfaced this month. Nothing is written to the FP&amp;A workbook until you resolve them.</p>
+
+        <div class="reconcile-grid">
+          <div class="reconcile-panel matched">
+            <div class="reconcile-head">
+              <div class="reconcile-title">Matched cleanly</div>
+              <div class="reconcile-count">183</div>
+            </div>
+            <div class="acct-row">
+              <div>
+                <div class="acct-name">4010 · Revenue, Wholesale</div>
+                <div class="acct-target">&rarr; P&amp;L, row 12</div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--olive);">$487,290</div>
+            </div>
+            <div class="acct-row">
+              <div>
+                <div class="acct-name">4020 · Revenue, DTC</div>
+                <div class="acct-target">&rarr; P&amp;L, row 13</div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--olive);">$162,847</div>
+            </div>
+            <div class="acct-row">
+              <div>
+                <div class="acct-name">5010 · COGS, Inventory</div>
+                <div class="acct-target">&rarr; P&amp;L, row 22</div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--olive);">$193,452</div>
+            </div>
+            <div class="acct-row">
+              <div>
+                <div class="acct-name">6110 · Payroll, Operations</div>
+                <div class="acct-target">&rarr; P&amp;L, row 35</div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--olive);">$84,200</div>
+            </div>
+            <div class="acct-row">
+              <div>
+                <div class="acct-name">6200 · Rent, Warehouse</div>
+                <div class="acct-target">&rarr; P&amp;L, row 41</div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--olive);">$12,500</div>
+            </div>
+            <div class="acct-row">
+              <div>
+                <div class="acct-name">+ 178 more matched accounts</div>
+                <div class="acct-target">see detail&hellip;</div>
+              </div>
+              <button class="acct-action">Expand</button>
+            </div>
+          </div>
+
+          <div class="reconcile-panel warning">
+            <div class="reconcile-head">
+              <div class="reconcile-title">Needs your decision</div>
+              <div class="reconcile-count">3</div>
+            </div>
+
+            <div class="unmatched-item">
+              <div class="unmatched-q">QuickBooks has <span class="acct">4030 · Revenue, Subscription</span> but we don't see it in your FP&amp;A workbook.</div>
+              <div class="unmatched-controls">
+                <select>
+                  <option>Map to&hellip;</option>
+                  <option>P&amp;L, new row under Revenue</option>
+                  <option>Merge into &lsquo;4020 · Revenue, DTC&rsquo;</option>
+                  <option>Merge into &lsquo;4010 · Revenue, Wholesale&rsquo;</option>
+                </select>
+                <button class="acct-action">Skip this month</button>
+              </div>
+            </div>
+
+            <div class="unmatched-item">
+              <div class="unmatched-q">QuickBooks has <span class="acct">6315 · Software Subscriptions</span> but we don't see it in your FP&amp;A workbook.</div>
+              <div class="unmatched-controls">
+                <select>
+                  <option>Map to&hellip;</option>
+                  <option>P&amp;L, new row under SG&amp;A</option>
+                  <option>Merge into &lsquo;6310 · SaaS Tools&rsquo;</option>
+                  <option>Merge into &lsquo;6320 · Other SG&amp;A&rsquo;</option>
+                </select>
+                <button class="acct-action">Skip this month</button>
+              </div>
+            </div>
+
+            <div class="unmatched-item">
+              <div class="unmatched-q">QuickBooks has <span class="acct">2210 · Customer Deposits</span> but we don't see it in your FP&amp;A workbook.</div>
+              <div class="unmatched-controls">
+                <select>
+                  <option>Map to&hellip;</option>
+                  <option>Balance Sheet, new row under Liabilities</option>
+                  <option>Merge into &lsquo;2200 · Accrued Liab.&rsquo;</option>
+                </select>
+                <button class="acct-action">Skip this month</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-bar">
+          <button class="btn btn-ghost" onclick="goStep(2)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goStep(4)">Apply mappings &amp; update workbook</button>
+        </div>
+      </main>
+
+      <aside class="margin">
+        <div class="margin-section">
+          <div class="margin-eyebrow">Why this step exists</div>
+          <p class="margin-body">QuickBooks row order shifts month to month and new accounts appear without warning. <strong>Name-based mapping</strong> avoids the row-position errors that plague the manual workflow.</p>
+        </div>
+        <div class="margin-section">
+          <div class="margin-eyebrow">Acceptance criteria</div>
+          <div>
+            <span class="ac-chip">AC 4 · name mapping</span>
+            <span class="ac-chip">AC 5 · 13 tabs</span>
+            <span class="ac-chip">AC 6 · flag unmatched</span>
+          </div>
+        </div>
+        <div class="margin-section">
+          <div class="margin-eyebrow">Safety</div>
+          <p class="margin-body">Your FP&amp;A workbook is opened in memory only. Nothing is written until you click <em>Apply mappings</em>. A backup of the previous month's version is preserved automatically.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 4: NARRATIVE ============ -->
+  <section class="screen" data-screen="4">
+    <div class="screen-grid">
+      <main>
+        <div class="screen-eyebrow">Step 04 / Review narrative</div>
+        <h1 class="screen-title">Narrative ready for <em>your edits</em>.</h1>
+        <p class="screen-lede">Drafted from this month's figures. Edit anything; click <em>regenerate</em> if you want a fresh take. The Excel update and PowerPoint refresh have already completed.</p>
+
+        <div class="narrative-grid">
+          <div class="narrative-editor">
+            <div class="narrative-tools">
+              <div class="narrative-tools-left">
+                <div class="label">AI Draft · April 2026</div>
+              </div>
+              <div>
+                <button>Regenerate</button>
+                <button>Revert</button>
+              </div>
+            </div>
+            <div class="narrative-text" contenteditable="true">
+              <p><strong>April 2026 closed at $487,290 in revenue</strong>, up 8.2% from March and tracking 14% ahead of the quarterly plan. Wholesale recovered the seasonal softness from Q1, contributing $324,443 against a March base of $287,118. DTC volume held flat at $162,847 even as AOV climbed to $189.42, suggesting customers spent more per order but order count was roughly unchanged.</p>
+              <p><em>Three signals worth attention this month.</em> Gross profit margin compressed by 80 basis points to 60.3%, driven by a one-time inventory write-down of $12,400 in the warehouse audit. Cash position improved by $94,200 month-over-month despite the dividend distribution, reflecting strong AR collection and a longer payment cycle on the largest wholesale invoice. Customer repeat-order share continued its slow climb to 41.7% of new orders, the highest level in the trailing twelve months.</p>
+              <p>Looking forward to May, the planned vendor consolidation should remove roughly $3,200 of monthly subscription overhead, and the inventory write-down headwind is non-recurring. <strong>Plan adherence remains strong.</strong></p>
+            </div>
+          </div>
+
+          <aside>
+            <div class="metrics-card">
+              <div class="metrics-eyebrow">April 2026 · summary</div>
+              <div class="metric">
+                <div class="metric-label">Revenue</div>
+                <div class="metric-value">$487,290</div>
+                <div class="metric-delta up">&uarr; 8.2% MoM</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Gross profit</div>
+                <div class="metric-value">$293,840</div>
+                <div class="metric-delta down">&darr; 80 bps margin</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Cash, end of month</div>
+                <div class="metric-value">$1.84M</div>
+                <div class="metric-delta up">&uarr; $94,200</div>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <div class="action-bar">
+          <button class="btn btn-ghost" onclick="goStep(3)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goStep(5)">Approve narrative &amp; finalize</button>
+        </div>
+      </main>
+
+      <aside class="margin">
+        <div class="margin-section">
+          <div class="margin-eyebrow">What just happened</div>
+          <p class="margin-body">All 13 FP&amp;A tabs were updated. The 17-slide PowerPoint had its dynamic text and embedded chart data refreshed. Layout and formatting are preserved.</p>
+        </div>
+        <div class="margin-section">
+          <div class="margin-eyebrow">Acceptance criteria</div>
+          <div>
+            <span class="ac-chip">AC 7 · slide text</span>
+            <span class="ac-chip">AC 8 · chart data</span>
+            <span class="ac-chip">AC 9 · structure preserved</span>
+            <span class="ac-chip">AC 10 · metrics summary</span>
+            <span class="ac-chip">AC 11 · AI narrative</span>
+            <span class="ac-chip">AC 12 · display &amp; download</span>
+            <span class="ac-chip">AC 13 · inline edit</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 5: DOWNLOADS ============ -->
+  <section class="screen" data-screen="5">
+    <div class="screen-grid">
+      <main>
+        <div class="screen-eyebrow">Step 05 / Outputs ready</div>
+        <h1 class="screen-title">Three files. <em>Ready</em> to download.</h1>
+        <p class="screen-lede">Your monthly cycle is complete. The FP&amp;A workbook, board deck, and summary text are below. The same files are also available in your run history.</p>
+
+        <div class="downloads-grid">
+          <div class="download-card">
+            <div class="download-icon">xls</div>
+            <div class="download-name">FP&amp;A Workbook</div>
+            <div class="download-filename">FPA_Master_v18_April2026.xlsx</div>
+            <div class="download-meta">
+              <div class="row"><span>Size</span><span>892 KB</span></div>
+              <div class="row"><span>Tabs updated</span><span>13 / 13</span></div>
+              <div class="row"><span>Backup</span><span>preserved</span></div>
+            </div>
+          </div>
+
+          <div class="download-card">
+            <div class="download-icon">ppt</div>
+            <div class="download-name">Board Report</div>
+            <div class="download-filename">BoardReport_April2026.pptx</div>
+            <div class="download-meta">
+              <div class="row"><span>Size</span><span>4.1 MB</span></div>
+              <div class="row"><span>Slides updated</span><span>17 / 17</span></div>
+              <div class="row"><span>Charts refreshed</span><span>12</span></div>
+            </div>
+          </div>
+
+          <div class="download-card">
+            <div class="download-icon">txt</div>
+            <div class="download-name">Summary &amp; Narrative</div>
+            <div class="download-filename">Summary_April2026.txt</div>
+            <div class="download-meta">
+              <div class="row"><span>Size</span><span>4 KB</span></div>
+              <div class="row"><span>Metrics</span><span>included</span></div>
+              <div class="row"><span>Narrative</span><span>your edited copy</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="complete-summary">
+          <div class="h">Cycle complete</div>
+          <div class="p">All 15 acceptance criteria met for this run. Total time: 1 minute 47 seconds, of which roughly 30 seconds was Shopify API rate limiting.</div>
+        </div>
+
+        <div class="action-bar">
+          <button class="btn btn-ghost" onclick="goStep(4)">&larr; Back</button>
+          <button class="btn btn-secondary" onclick="goStep(1)">Begin next month</button>
+        </div>
+      </main>
+
+      <aside class="margin">
+        <div class="margin-section">
+          <div class="margin-eyebrow">Where these live</div>
+          <p class="margin-body">Files are available immediately and remain in your run history for 12 months. You can re-download any prior month at any time.</p>
+        </div>
+        <div class="margin-section">
+          <div class="margin-eyebrow">Acceptance criteria</div>
+          <div>
+            <span class="ac-chip">AC 14 · downloadable outputs</span>
+          </div>
+        </div>
+        <div class="margin-section">
+          <div class="margin-eyebrow">Next month</div>
+          <p class="margin-body">The same workflow, the same five steps. Your account mappings from this month are remembered; only new or renamed accounts will need decisions.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ COLOPHON ============ -->
+  <footer class="colophon">
+    <div class="colophon-left">
+      &ldquo;A mockup is a proposal in pictures &mdash; a way for us to confirm we&rsquo;re building the tool you actually need, before we write the first line of code.&rdquo;
+    </div>
+    <div class="colophon-right">
+      <div>Mockup &middot; Static preview</div>
+      <div>For proposal review only</div>
+      <div class="bma-mark">BMA <span>Dev Team</span> &middot; 2026</div>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  function goStep(n) {
+    const steps = document.querySelectorAll('.step');
+    const screens = document.querySelectorAll('.screen');
+    steps.forEach(s => {
+      s.classList.remove('active');
+      if (parseInt(s.dataset.step) < n) s.classList.add('complete');
+      else s.classList.remove('complete');
+    });
+    const target = document.querySelector(`.step[data-step="${n}"]`);
+    if (target) target.classList.add('active');
+    screens.forEach(s => s.classList.remove('active'));
+    const activeScreen = document.querySelector(`.screen[data-screen="${n}"]`);
+    if (activeScreen) activeScreen.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.querySelectorAll('.step').forEach(step => {
+    step.addEventListener('click', () => goStep(parseInt(step.dataset.step)));
+  });
+
+  // dropzone fake upload state preserved via inline handler; nothing further here
+</script>
+
+</body>
+</html>
