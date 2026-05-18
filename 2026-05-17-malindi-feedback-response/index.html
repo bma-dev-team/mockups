@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Your Feedback, Implemented &mdash; BuildMyApp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&family=Hanken+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #F4F1E8;
+    --paper-tint: #ECE7D7;
+    --ink: #1A2238;
+    --ink-soft: #3A4257;
+    --ink-faint: #6B7080;
+    --rule: #C9C2AE;
+    --rule-soft: #DAD4C0;
+    --accent: #8B2C2C;
+    --accent-deep: #6B1F1F;
+    --accent-soft: #A85050;
+    --olive: #6B6E48;
+    --olive-soft: #8A8D6C;
+    --gold: #B08A3E;
+    --bma-blue: #306CC0;
+    --bma-accent: #D8306C;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Hanken Grotesk', sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at top left, rgba(176,138,62,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(139,44,44,0.03) 0%, transparent 60%),
+      var(--paper);
+    background-attachment: fixed;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.35;
+    background-image:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.13 0 0 0 0 0.22 0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    mix-blend-mode: multiply;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 2;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 56px 64px 96px;
+  }
+
+  /* ============== MASTHEAD ============== */
+  .masthead {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    padding-bottom: 28px;
+    border-bottom: 1.5px solid var(--ink);
+    margin-bottom: 18px;
+  }
+
+  .masthead-title {
+    font-family: 'Newsreader', serif;
+    font-weight: 500;
+    font-size: 52px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variation-settings: "opsz" 60;
+  }
+
+  .masthead-title em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+
+  .masthead-meta {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    line-height: 1.7;
+  }
+
+  .masthead-meta .label { color: var(--ink-faint); }
+  .masthead-meta .value { color: var(--ink); font-weight: 500; }
+
+  .double-rule {
+    height: 1px;
+    background: var(--ink);
+    margin-bottom: 56px;
+  }
+
+  /* ============== INTRO ============== */
+  .intro {
+    margin-bottom: 72px;
+    max-width: 64ch;
+  }
+
+  .intro-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+
+  .intro-lede {
+    font-family: 'Newsreader', serif;
+    font-size: 24px;
+    line-height: 1.45;
+    color: var(--ink);
+    font-style: italic;
+    font-variation-settings: "opsz" 24;
+    margin-bottom: 22px;
+  }
+
+  .intro-body {
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+
+  .intro-body + .intro-body { margin-top: 14px; }
+
+  /* ============== ITEM ============== */
+  .item {
+    margin-bottom: 88px;
+    position: relative;
+  }
+
+  .item-head {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 24px;
+    align-items: baseline;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 32px;
+  }
+
+  .item-num {
+    font-family: 'Newsreader', serif;
+    font-size: 72px;
+    line-height: 0.85;
+    color: var(--accent);
+    font-style: italic;
+    font-weight: 400;
+    font-variation-settings: "opsz" 72;
+  }
+
+  .item-title {
+    font-family: 'Newsreader', serif;
+    font-weight: 500;
+    font-size: 30px;
+    line-height: 1.2;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    font-variation-settings: "opsz" 32;
+  }
+
+  .feedback {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 28px;
+    margin-bottom: 28px;
+    padding: 22px 26px 22px 0;
+    background: rgba(255,255,255,0.45);
+    border-left: 3px solid var(--olive);
+    padding-left: 26px;
+  }
+
+  .feedback-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--olive);
+    padding-top: 4px;
+  }
+
+  .feedback-quote {
+    font-family: 'Newsreader', serif;
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-variation-settings: "opsz" 18;
+  }
+
+  .response {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 28px;
+    margin-bottom: 28px;
+  }
+
+  .response-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding-top: 4px;
+  }
+
+  .response-body {
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+
+  .response-body strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ============== SCREENSHOTS ============== */
+  .shots {
+    margin-top: 32px;
+    margin-left: 138px;
+  }
+
+  .shots-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .shots-single .shot { max-width: 720px; }
+
+  .shot {
+    background: rgba(255,255,255,0.6);
+    border: 1px solid var(--rule);
+    padding: 10px;
+    box-shadow: 0 2px 10px rgba(26,34,56,0.04);
+  }
+
+  .shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .shot-caption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  /* ============== CLOSING ============== */
+  .closing {
+    margin-top: 96px;
+    padding-top: 36px;
+    border-top: 1.5px solid var(--ink);
+  }
+
+  .closing-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  .closing-body {
+    font-family: 'Newsreader', serif;
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    font-style: italic;
+    max-width: 64ch;
+    font-variation-settings: "opsz" 20;
+  }
+
+  .closing-sign {
+    margin-top: 22px;
+    font-family: 'Hanken Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+  }
+
+  /* ============== RESPONSIVE ============== */
+  @media (max-width: 900px) {
+    .wrap { padding: 40px 28px 64px; }
+    .masthead { grid-template-columns: 1fr; gap: 16px; }
+    .masthead-meta { text-align: left; }
+    .masthead-title { font-size: 38px; }
+    .item-head { grid-template-columns: 48px 1fr; gap: 16px; }
+    .item-num { font-size: 52px; }
+    .item-title { font-size: 22px; }
+    .feedback, .response { grid-template-columns: 1fr; gap: 10px; }
+    .feedback-label, .response-label { padding-top: 0; }
+    .shots { margin-left: 0; }
+    .shots-pair { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div class="masthead-title">Your feedback,<br /><em>implemented.</em></div>
+    <div class="masthead-meta">
+      <div><span class="label">For</span> &nbsp;<span class="value">Malindi</span></div>
+      <div><span class="label">From</span> &nbsp;<span class="value">BMA Dev Team</span></div>
+      <div><span class="label">Dated</span> &nbsp;<span class="value">May 17, 2026</span></div>
+    </div>
+  </div>
+  <div class="double-rule"></div>
+
+  <!-- INTRO -->
+  <section class="intro">
+    <div class="intro-eyebrow">A thank-you, with receipts</div>
+    <p class="intro-lede">Your feedback on the BuildMyApp "request" posting process was genuinely useful, so we built against all five of your suggestions.</p>
+    <p class="intro-body">Each item below is your concern in your own words, followed by what we changed in the product. Where the change is visual, screenshots of the new flow are included.</p>
+    <p class="intro-body">Thank you for taking the time. Feedback this specific is rare and we treated it accordingly.</p>
+  </section>
+
+  <!-- ITEM 1 -->
+  <section class="item">
+    <div class="item-head">
+      <div class="item-num">1</div>
+      <div class="item-title">Credit card required before posting</div>
+    </div>
+    <div class="feedback">
+      <div class="feedback-label">You said</div>
+      <div class="feedback-quote">"Why do I have to put my credit card in before I post?"</div>
+    </div>
+    <div class="response">
+      <div class="response-label">We changed</div>
+      <div class="response-body">
+        We removed the requirement entirely. Buyers no longer enter credit card information at posting. Card details are collected only at the moment you accept a developer's proposal, when you actually need a payment method on file.
+      </div>
+    </div>
+  </section>
+
+  <!-- ITEM 2 -->
+  <section class="item">
+    <div class="item-head">
+      <div class="item-num">2</div>
+      <div class="item-title">No-negotiation pricing &amp; lack of recourse</div>
+    </div>
+    <div class="feedback">
+      <div class="feedback-label">You said</div>
+      <div class="feedback-quote">"Six months seems like a long time to wait to repost with a different price. I also don't understand why price can't be negotiated. It feels scary to spend thousands of dollars with no recourse or way to get my money back."</div>
+    </div>
+    <div class="response">
+      <div class="response-label">We changed</div>
+      <div class="response-body">
+        We built an in-product FAQ system that explains <strong>why</strong> BuildMyApp uses haggle-free pricing (it protects both buyers and developers from races to the bottom and scope creep), and a second FAQ that lays out the <strong>buyer protections</strong> already built into every engagement: funds are held in escrow, milestone releases are buyer-approved, and you retain full control over fund release until you confirm delivery against the acceptance criteria you wrote.
+      </div>
+    </div>
+    <div class="shots shots-pair">
+      <div class="shot">
+        <img src="haggle-free-faq.jpg" alt="Haggle-free pricing FAQ modal" />
+        <div class="shot-caption">Haggle-free pricing FAQ</div>
+      </div>
+      <div class="shot">
+        <img src="buyer-protections-faq.jpg" alt="Buyer protections FAQ modal" />
+        <div class="shot-caption">Buyer protections FAQ</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ITEM 3 -->
+  <section class="item">
+    <div class="item-head">
+      <div class="item-num">3</div>
+      <div class="item-title">Where to find the full specification</div>
+    </div>
+    <div class="feedback">
+      <div class="feedback-label">You said</div>
+      <div class="feedback-quote">"It's a little confusing as to where to find that full specification. I ultimately found it on the left hand side, but that does not feel like the obvious place to look."</div>
+    </div>
+    <div class="response">
+      <div class="response-label">We changed</div>
+      <div class="response-body">
+        We rebuilt the request-creation UX. The completed specification now lives on the <strong>right-hand side</strong> where the eye expects it, and we added live user-feedback signaling that updates as the specification builds out, so it's obvious in real time that your input is becoming the spec.
+      </div>
+    </div>
+    <div class="shots shots-pair">
+      <div class="shot">
+        <img src="post_request_revision.jpg" alt="Revised request posting layout" />
+        <div class="shot-caption">Revised layout, spec on the right</div>
+      </div>
+      <div class="shot">
+        <img src="post_request_revision2.jpg" alt="Live specification signaling during posting" />
+        <div class="shot-caption">Live spec-building signal</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ITEM 4 -->
+  <section class="item">
+    <div class="item-head">
+      <div class="item-num">4</div>
+      <div class="item-title">Public visibility of postings</div>
+    </div>
+    <div class="feedback">
+      <div class="feedback-label">You said</div>
+      <div class="feedback-quote">"The public posting feels really vulnerable and scary to me. Is there a way to obfuscate parts of it? Or to make the project a little bit hidden until a developer clicks in so that it's not as exposed to the public and more exposed to people who might be interested in bidding on it?"</div>
+    </div>
+    <div class="response">
+      <div class="response-label">We changed</div>
+      <div class="response-body">
+        We implemented your recommendation directly. Buyers can now mark a posting as <strong>Verified Developers Only</strong>, which hides the full request from public view and exposes it only to developers BuildMyApp has verified. The toggle lives in the request form itself, so you choose visibility at posting time.
+      </div>
+    </div>
+    <div class="shots shots-pair">
+      <div class="shot">
+        <img src="restricting_post_access.jpg" alt="Visibility toggle on the request form" />
+        <div class="shot-caption">Visibility toggle on the request form</div>
+      </div>
+      <div class="shot">
+        <img src="restricting_post_access2.jpg" alt="Verified-Developers-Only mode applied to a posting" />
+        <div class="shot-caption">Verified-Developers-Only applied</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ITEM 5 -->
+  <section class="item">
+    <div class="item-head">
+      <div class="item-num">5</div>
+      <div class="item-title">Pricing felt high</div>
+    </div>
+    <div class="feedback">
+      <div class="feedback-label">You said</div>
+      <div class="feedback-quote">"The pricing seems really high."</div>
+    </div>
+    <div class="response">
+      <div class="response-label">We changed</div>
+      <div class="response-body">
+        You were right. Our original pricing analysis came straight from base LLM training data, which over-weights agency-style rates. We rebuilt the framework to assume <strong>AI-supported independent developers</strong>, not agency teams, and to factor in the speed gains of AI-leveraged development. The result is a meaningfully lower price band for builds of your shape.
+      </div>
+    </div>
+  </section>
+
+  <!-- CLOSING -->
+  <section class="closing">
+    <div class="closing-eyebrow">Closing</div>
+    <p class="closing-body">Specific feedback from real buyers is how a marketplace becomes one that buyers actually trust. Thank you for giving us yours, and for the chance to show what we did with it.</p>
+    <p class="closing-sign">BMA Dev Team</p>
+  </section>
+
+</div>
+</body>
+</html>
