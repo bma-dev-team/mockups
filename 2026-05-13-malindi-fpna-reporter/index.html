@@ -68,6 +68,39 @@
     padding: 56px 64px 96px;
   }
 
+  /* ============== BACK LINK ============== */
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 36px;
+    padding: 6px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: color 160ms ease, border-color 160ms ease, transform 160ms ease;
+  }
+
+  .back-link:hover {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    transform: translateX(-3px);
+  }
+
+  .back-link .arrow {
+    font-family: 'Newsreader', serif;
+    font-size: 22px;
+    line-height: 1;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+    transform: translateY(-1px);
+  }
+
   /* ============== MASTHEAD ============== */
   .masthead {
     display: grid;
@@ -853,6 +886,11 @@
 </head>
 <body>
 <div class="wrap">
+
+  <a class="back-link" href="https://www.appmarketplace.dev/proposals/f07590ff-9621-4918-8350-3cc314d94ae3">
+    <span class="arrow" aria-hidden="true">&larr;</span>
+    Back to the proposal
+  </a>
 
   <!-- ============ MASTHEAD ============ -->
   <header class="masthead">
