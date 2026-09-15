@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spoken - listen to your documents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400&family=Karla:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --dusk:#1E2236;          /* app chrome: indigo dusk */
+    --dusk-2:#272C45;        /* raised chrome */
+    --dusk-3:#363C5C;        /* borders on chrome */
+    --ivory:#F4EFE4;         /* the lit page */
+    --ivory-edge:#E3DBC7;    /* page rule */
+    --ink:#23262F;           /* text on page */
+    --ink-mut:#6F7280;       /* muted on page */
+    --on-dusk:#EDE9DF;       /* text on chrome */
+    --on-dusk-mut:#A6ABC4;   /* muted on chrome */
+    --lamp:#F0B54A;          /* amber: what you are hearing */
+    --lamp-soft:rgba(240,181,74,.30);
+    --lamp-glow:0 0 0 6px rgba(240,181,74,.14);
+    --ribbon:#C9553F;        /* bookmark ribbon: your saved place */
+    --ok:#6FA97F;
+    --r:14px;
+    --serif:"Literata",Georgia,"Times New Roman",serif;
+    --sans:"Karla",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --transport-h:118px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--dusk);color:var(--on-dusk);font-family:var(--sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  button{font:inherit;color:inherit}
+  :focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+  /* Masthead */
+  .masthead{position:sticky;top:0;z-index:30;background:rgba(30,34,54,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--dusk-3)}
+  .masthead .wrap{display:flex;align-items:center;gap:14px;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:600;font-size:22px;letter-spacing:.01em}
+  .brand .lamp{width:12px;height:12px;border-radius:50%;background:var(--lamp);box-shadow:0 0 18px 4px rgba(240,181,74,.45)}
+  .masthead .spacer{flex:1}
+  .chip{font-size:13px;color:var(--on-dusk-mut);border:1px solid var(--dusk-3);border-radius:100px;padding:5px 12px;white-space:nowrap}
+
+  /* Stepper (screen nav) */
+  .stepper{display:flex;gap:6px;flex-wrap:wrap;padding:14px 0 4px}
+  .step{border:1px solid var(--dusk-3);border-radius:100px;padding:8px 14px;cursor:pointer;color:var(--on-dusk-mut);background:transparent;display:flex;gap:8px;align-items:center;transition:background .15s,color .15s}
+  .step:hover{color:var(--on-dusk);border-color:#4A5178}
+  .step.active{background:var(--ivory);color:var(--ink);border-color:var(--ivory)}
+  .step-num{display:none}
+  .step-label{font-size:14px;font-weight:500}
+
+  /* Screens */
+  .screen{display:none;padding:18px 0 40px}
+  .screen.active{display:block}
+  .screen-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:18px}
+  .kicker{margin:0 0 4px;font-size:14px;color:var(--on-dusk-mut)}
+  .title{font-family:var(--serif);font-weight:500;font-size:30px;line-height:1.15;margin:0 0 8px;color:var(--on-dusk)}
+  .lead{margin:0;max-width:52ch;color:var(--on-dusk-mut)}
+  .ac{display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0}
+  .ac span{font-size:11.5px;color:var(--on-dusk-mut);border:1px dashed var(--dusk-3);border-radius:6px;padding:3px 8px;white-space:nowrap}
+  .ac b{color:var(--lamp);font-weight:600}
+
+  /* Buttons */
+  .btn{border:1px solid var(--dusk-3);background:var(--dusk-2);border-radius:12px;padding:12px 18px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:10px;transition:background .15s}
+  .btn:hover{background:#2F3552}
+  .btn.primary{background:var(--lamp);border-color:var(--lamp);color:var(--ink)}
+  .btn.primary:hover{background:#F5C466}
+  .btn[disabled]{opacity:.45;cursor:not-allowed}
+  .btn.block{width:100%;justify-content:center}
+  .hint{font-size:13.5px;color:var(--on-dusk-mut);margin:10px 0 0}
+
+  /* Library */
+  .lib{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:28px;align-items:start}
+  .doclist{margin:0;padding:0;list-style:none;border-top:1px solid var(--dusk-3)}
+  .doc{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 18px;padding:16px 4px 14px;border-bottom:1px solid var(--dusk-3);cursor:pointer;background:transparent;border-left:0;border-right:0;border-top:0;width:100%;text-align:left;color:inherit}
+  .doc:hover .doc-title{color:var(--lamp)}
+  .doc-title{font-family:var(--serif);font-size:19px;font-weight:500;margin:0;transition:color .15s}
+  .doc-meta{font-size:13.5px;color:var(--on-dusk-mut);margin:0}
+  .doc-pct{font-size:14px;color:var(--on-dusk-mut);align-self:start;padding-top:3px;white-space:nowrap}
+  .doc-pct.done{color:var(--ok)}
+  .doc-bar{grid-column:1/-1;height:3px;background:var(--dusk-3);border-radius:2px;overflow:hidden}
+  .doc-bar i{display:block;height:100%;background:var(--lamp);border-radius:2px}
+  .doc.current{background:linear-gradient(90deg,rgba(240,181,74,.10),transparent 60%)}
+  .addbox{background:var(--dusk-2);border:1px solid var(--dusk-3);border-radius:var(--r);padding:18px}
+  .addbox h3{margin:0 0 6px;font-family:var(--serif);font-weight:500;font-size:20px}
+  .addbox p{margin:0 0 14px;color:var(--on-dusk-mut);font-size:14.5px}
+  .types{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .types span{font-size:12.5px;border:1px solid var(--dusk-3);border-radius:6px;padding:3px 8px;color:var(--on-dusk-mut)}
+  .empty{display:none;text-align:center;color:var(--on-dusk-mut);padding:40px 0}
+
+  /* Reader */
+  .reader{display:grid;grid-template-columns:250px minmax(0,1fr);gap:26px;align-items:start}
+  .rail{position:sticky;top:78px}
+  .rail h3{margin:0 0 6px;font-size:14px;font-weight:500;color:var(--on-dusk-mut)}
+  .rail .doclist .doc{padding:11px 6px 10px}
+  .rail .doc-title{font-size:16px}
+  .rail .doc-meta{display:none}
+  .page-wrap{position:relative}
+  .page-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;margin-bottom:12px}
+  .page-head .kicker{margin-bottom:2px}
+  .doc-h1{font-family:var(--serif);font-weight:500;font-size:24px;line-height:1.2;margin:0;color:var(--on-dusk)}
+  .pref{border:1px solid var(--dusk-3);background:transparent;border-radius:100px;padding:7px 14px;cursor:pointer;color:var(--on-dusk);font-size:14px;display:inline-flex;gap:8px;align-items:center;white-space:nowrap}
+  .pref b{color:var(--lamp);font-weight:600}
+  .page{background:var(--ivory);color:var(--ink);border-radius:var(--r);padding:34px 36px 40px;box-shadow:0 30px 80px -30px rgba(0,0,0,.7),0 0 0 1px var(--ivory-edge) inset;font-family:var(--serif);font-size:19px;line-height:1.7;position:relative;overflow:hidden;min-height:420px}
+  .page p{margin:0 0 1.1em;max-width:64ch}
+  .page p:last-child{margin-bottom:0}
+  .sec{border-radius:4px;transition:background .5s,box-shadow .5s;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+  .sec.speaking{background:var(--lamp-soft);box-shadow:0 0 0 3px var(--lamp-soft)}
+  .ribbon{position:absolute;top:-4px;left:26px;width:14px;height:52px;background:var(--ribbon);clip-path:polygon(0 0,100% 0,100% 100%,50% 82%,0 100%)}
+  .ribbon-note{position:absolute;top:10px;left:50px;font-family:var(--sans);font-size:12px;color:var(--ink-mut)}
+  .page ::selection{background:rgba(201,85,63,.25)}
+  .selbtn{position:absolute;right:22px;top:16px;display:none;background:var(--ink);color:var(--ivory);border:0;border-radius:100px;padding:9px 16px;font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;box-shadow:0 10px 30px -10px rgba(0,0,0,.6)}
+  .selbtn.show{display:inline-flex;gap:8px;align-items:center}
+  .selhint{font-family:var(--sans);font-size:12.5px;color:var(--ink-mut);margin:18px 0 0;padding-top:12px;border-top:1px solid var(--ivory-edge)}
+
+  /* Transport */
+  .transport{margin-top:16px;background:var(--dusk-2);border:1px solid var(--dusk-3);border-radius:var(--r);padding:14px 18px 16px}
+  .prog{display:flex;align-items:center;gap:12px;font-size:13.5px;color:var(--on-dusk-mut);margin-bottom:12px}
+  .prog .bar{flex:1;height:5px;background:var(--dusk-3);border-radius:3px;overflow:hidden;cursor:pointer}
+  .prog .bar i{display:block;height:100%;background:var(--lamp);width:62%;border-radius:3px;transition:width .5s}
+  .prog .pct{color:var(--on-dusk);font-weight:500;min-width:3.5ch;text-align:right}
+  .ctrls{display:flex;align-items:center;justify-content:center;gap:10px}
+  .tb{border:1px solid var(--dusk-3);background:transparent;border-radius:100px;height:48px;min-width:48px;padding:0 12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:13.5px;font-weight:500;color:var(--on-dusk);transition:background .15s}
+  .tb:hover{background:#333A5A}
+  .tb[disabled]{opacity:.4;cursor:not-allowed}
+  .tb svg{width:20px;height:20px;fill:currentColor}
+  .tb.play{width:68px;height:68px;border-radius:50%;background:var(--lamp);border-color:var(--lamp);color:var(--ink);margin:0 6px;box-shadow:var(--lamp-glow)}
+  .tb.play:hover{background:#F5C466}
+  .tb.play svg{width:28px;height:28px}
+  .tb.play .ico-pause{display:none}
+  .tb.play.on .ico-play{display:none}
+  .tb.play.on .ico-pause{display:block}
+  .tb.play.busy{animation:pulse 1.2s ease-in-out infinite}
+  @keyframes pulse{50%{box-shadow:0 0 0 12px rgba(240,181,74,.10)}}
+  .status{text-align:center;font-size:13px;color:var(--on-dusk-mut);margin-top:10px;min-height:1.4em}
+
+  /* Voice & speed */
+  .prefs{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px}
+  .card{background:var(--dusk-2);border:1px solid var(--dusk-3);border-radius:var(--r);padding:20px}
+  .card h3{margin:0 0 4px;font-family:var(--serif);font-weight:500;font-size:20px}
+  .card .sub{margin:0 0 14px;color:var(--on-dusk-mut);font-size:14.5px}
+  .voices{display:grid;gap:8px}
+  .voice{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--dusk-3);border-radius:12px;background:transparent;cursor:pointer;text-align:left;color:inherit}
+  .voice:hover{border-color:#4A5178}
+  .voice.on{border-color:var(--lamp);background:rgba(240,181,74,.08)}
+  .voice .dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--dusk-3)}
+  .voice.on .dot{border-color:var(--lamp);background:var(--lamp);box-shadow:inset 0 0 0 3px var(--dusk-2)}
+  .voice .nm{font-family:var(--serif);font-size:18px;font-weight:500}
+  .voice .ch{font-size:13.5px;color:var(--on-dusk-mut)}
+  .speeds{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .speed{border:1px solid var(--dusk-3);background:transparent;border-radius:10px;padding:14px 0;cursor:pointer;font-size:16px;font-weight:500;color:var(--on-dusk-mut)}
+  .speed:hover{color:var(--on-dusk)}
+  .speed.on{background:var(--lamp);border-color:var(--lamp);color:var(--ink)}
+  .remember{margin:14px 0 0;font-size:13.5px;color:var(--on-dusk-mut);display:flex;gap:8px;align-items:center}
+  .remember i{width:8px;height:8px;border-radius:50%;background:var(--ok);display:inline-block}
+
+  /* Install */
+  .install{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px}
+  .install .card ol{margin:0;padding-left:20px;color:var(--on-dusk-mut);line-height:1.6}
+  .install .card ol b{color:var(--on-dusk);font-weight:500}
+  .urlbox{margin-top:22px;background:var(--ivory);color:var(--ink);border-radius:var(--r);padding:18px 20px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:space-between}
+  .urlbox .u{font-family:var(--serif);font-size:18px}
+  .urlbox small{color:var(--ink-mut);font-size:13.5px}
+  .offline{margin-top:14px;font-size:13.5px;color:var(--on-dusk-mut)}
+
+  .colophon{border-top:1px solid var(--dusk-3);margin-top:20px;padding:22px 0 36px;font-size:12.5px;color:var(--on-dusk-mut);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+  /* Phone layout */
+  @media (max-width:760px){
+    .wrap{padding:0 14px}
+    .masthead .chip{display:none}
+    .stepper{overflow-x:auto;flex-wrap:nowrap;padding-bottom:8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .stepper::-webkit-scrollbar{display:none}
+    .step{flex-shrink:0}
+    .title{font-size:25px}
+    .screen-head{flex-direction:column;gap:10px}
+    .ac{flex-direction:row;flex-wrap:wrap;align-items:flex-start}
+    .lib{grid-template-columns:1fr}
+    .addbox{order:-1}
+    .reader{grid-template-columns:1fr}
+    .rail{display:none}
+    .page{padding:26px 20px 30px;font-size:18px;border-radius:12px}
+    .ribbon{left:12px}
+    .ribbon-note{left:34px}
+    .screen[data-screen="2"]{padding-bottom:calc(var(--transport-h) + 24px)}
+    .transport{position:fixed;left:0;right:0;bottom:0;margin:0;border-radius:18px 18px 0 0;border-bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));z-index:25;box-shadow:0 -20px 40px -20px rgba(0,0,0,.6)}
+    .tb{min-width:44px;height:44px;padding:0 8px}
+    .tb.play{width:62px;height:62px}
+    .status{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .sec,.prog .bar i,.tb.play{transition:none;animation:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="brand"><span class="lamp"></span>Spoken</div>
+    <span class="spacer"></span>
+    <span class="chip">Installs on your phone, works on desktop</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="stepper" role="tablist" aria-label="Screens">
+    <button class="step active" role="tab" aria-selected="true" data-go="1"><div class="step-num">1</div><div class="step-label">Library</div></button>
+    <button class="step" role="tab" aria-selected="false" data-go="2"><div class="step-num">2</div><div class="step-label">Reader</div></button>
+    <button class="step" role="tab" aria-selected="false" data-go="3"><div class="step-num">3</div><div class="step-label">Voice and speed</div></button>
+    <button class="step" role="tab" aria-selected="false" data-go="4"><div class="step-num">4</div><div class="step-label">Install on your phone</div></button>
+  </nav>
+</div>
+
+<main class="wrap">
+
+  <!-- SCREEN 1: LIBRARY -->
+  <section class="screen active" data-screen="1">
+    <div class="screen-head">
+      <div>
+        <p class="kicker">My documents</p>
+        <h1 class="title">Pick up where you left off.</h1>
+        <p class="lead">Every document you add keeps its own place. Most recently used is at the top.</p>
+      </div>
+      <div class="ac">
+        <span><b>AC 1</b> add a document</span>
+        <span><b>AC 2</b> list, most recent first, % complete</span>
+        <span><b>AC 3, 14</b> each keeps its place, saved on the server</span>
+      </div>
+    </div>
+
+    <div class="lib">
+      <div>
+        <ul class="doclist" id="lib">
+          <li><button class="doc current" data-open="1">
+            <h3 class="doc-title">Q3 board memo</h3>
+            <span class="doc-pct">62%</span>
+            <p class="doc-meta">Word document, 14,300 words. Listened 20 minutes ago.</p>
+            <span class="doc-bar"><i style="width:62%"></i></span>
+          </button></li>
+          <li><button class="doc" data-open="2">
+            <h3 class="doc-title">Annual report 2025</h3>
+            <span class="doc-pct">18%</span>
+            <p class="doc-meta">PDF, 96 pages. Listened yesterday.</p>
+            <span class="doc-bar"><i style="width:18%"></i></span>
+          </button></li>
+          <li><button class="doc" data-open="3">
+            <h3 class="doc-title">Notes on attention</h3>
+            <span class="doc-pct done">Finished</span>
+            <p class="doc-meta">Markdown, 2,100 words. Listened Sep 9.</p>
+            <span class="doc-bar"><i style="width:100%"></i></span>
+          </button></li>
+          <li><button class="doc" data-open="4">
+            <h3 class="doc-title">Lease agreement, 14 Elm Street</h3>
+            <span class="doc-pct">Not started</span>
+            <p class="doc-meta">PDF, 31 pages. Added Sep 8.</p>
+            <span class="doc-bar"><i style="width:0%"></i></span>
+          </button></li>
+        </ul>
+        <div class="empty" id="empty">Nothing here yet. Add a document to start listening.</div>
+      </div>
+
+      <aside class="addbox">
+        <h3>Add a document</h3>
+        <p>The text is pulled out right here in your browser and saved to your library. The file itself is never uploaded.</p>
+        <button class="btn primary block" id="addBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Choose a file
+        </button>
+        <div class="types"><span>PDF</span><span>Word (.docx)</span><span>Plain text</span><span>Markdown</span></div>
+        <p class="hint" id="addHint">Scanned PDFs with no text layer cannot be read aloud; you will be told if that happens.</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- SCREEN 2: READER (signature) -->
+  <section class="screen" data-screen="2">
+    <div class="screen-head">
+      <div>
+        <p class="kicker">Now reading</p>
+        <h1 class="title">The page you are hearing is lit.</h1>
+        <p class="lead">Press play to hear the memo. The amber section is what is being spoken; the ribbon is where you were when you left. Highlight any text to read just that part.</p>
+      </div>
+      <div class="ac">
+        <span><b>AC 4</b> pause and resume in place</span>
+        <span><b>AC 5</b> place saved at every stop</span>
+        <span><b>AC 6</b> 15 s and section controls</span>
+        <span><b>AC 7</b> progress bar and percentage</span>
+        <span><b>AC 8</b> read selection</span>
+        <span><b>AC 12</b> sections play back to back</span>
+      </div>
+    </div>
+
+    <div class="reader">
+      <aside class="rail">
+        <h3>My documents</h3>
+        <ul class="doclist">
+          <li><button class="doc current" data-open="1"><h3 class="doc-title">Q3 board memo</h3><span class="doc-pct">62%</span><span class="doc-bar"><i style="width:62%"></i></span></button></li>
+          <li><button class="doc" data-open="2"><h3 class="doc-title">Annual report 2025</h3><span class="doc-pct">18%</span><span class="doc-bar"><i style="width:18%"></i></span></button></li>
+          <li><button class="doc" data-open="3"><h3 class="doc-title">Notes on attention</h3><span class="doc-pct done">Finished</span><span class="doc-bar"><i style="width:100%"></i></span></button></li>
+          <li><button class="doc" data-open="4"><h3 class="doc-title">Lease agreement, 14 Elm Street</h3><span class="doc-pct">Not started</span><span class="doc-bar"><i style="width:0%"></i></span></button></li>
+        </ul>
+      </aside>
+
+      <div class="page-wrap">
+        <div class="page-head">
+          <div>
+            <p class="kicker">Section <span id="secNo">14</span> of 38</p>
+            <h2 class="doc-h1" id="docTitle">Q3 board memo</h2>
+          </div>
+          <button class="pref" data-go="3" title="Change voice or speed"><b id="prefVoice">Thalia</b> at <b id="prefSpeed">1.2×</b></button>
+        </div>
+
+        <div class="page" id="page">
+          <span class="ribbon" aria-hidden="true"></span>
+          <span class="ribbon-note">Your place, saved 20 minutes ago</span>
+          <button class="selbtn" id="selBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            Read selection
+          </button>
+          <p style="margin-top:34px"><span class="sec" data-sec="12">Revenue for the quarter came in at $4.8 million, eleven percent ahead of plan and nineteen percent ahead of the same quarter last year. The overperformance was concentrated in the mid-market segment, where the new onboarding flow cut time-to-first-value from nine days to three.</span> <span class="sec speaking" data-sec="13">Gross margin held at 71 percent despite the hosting migration, which finished two weeks early and under budget. We expect a further two points of margin once the reserved-capacity pricing takes effect in October.</span></p>
+          <p><span class="sec" data-sec="14">Churn is the number I want the board to sit with. Logo churn fell to 1.1 percent a month, but revenue churn rose to 1.9 percent, because three of the accounts we lost were among our ten largest. Each of the three told us the same thing: they had outgrown the reporting.</span> <span class="sec" data-sec="15">That is fixable, and the plan for fixing it is the second half of this memo. The short version is that we bring forward the analytics work by a quarter and fund it from the marketing budget we did not spend.</span></p>
+          <p><span class="sec" data-sec="16">On hiring, we closed the quarter at 42 people against a plan of 45. The three open roles are all in engineering, and two of them have accepted offers starting in October. I am comfortable holding the third open until we see how the analytics work lands.</span></p>
+          <p class="selhint">Highlight any text with your finger or mouse and a Read selection button appears above it. Playback starts at the first word you selected and carries on from the end of it.</p>
+        </div>
+
+        <div class="transport" aria-label="Player">
+          <div class="prog">
+            <div class="bar" id="bar"><i id="barFill"></i></div>
+            <span class="pct" id="pct">62%</span>
+          </div>
+          <div class="ctrls">
+            <button class="tb" id="prevSec" title="Previous section" aria-label="Previous section"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
+            <button class="tb" id="back15" title="Back 15 seconds" aria-label="Back 15 seconds"><svg viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8-3.6-8-8-8z"/></svg>15</button>
+            <button class="tb play" id="play" title="Play" aria-label="Play">
+              <svg class="ico-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <svg class="ico-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+            </button>
+            <button class="tb" id="fwd15" title="Forward 15 seconds" aria-label="Forward 15 seconds">15<svg viewBox="0 0 24 24"><path d="M12 5V2l5 4-5 4V7c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6h2c0 4.4-3.6 8-8 8s-8-3.6-8-8 3.6-8 8-8z"/></svg></button>
+            <button class="tb" id="nextSec" title="Next section" aria-label="Next section"><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 6v12l8.5-6z"/></svg></button>
+          </div>
+          <div class="status" id="status">Paused. Your place is saved.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN 3: VOICE AND SPEED -->
+  <section class="screen" data-screen="3">
+    <div class="screen-head">
+      <div>
+        <p class="kicker">Voice and speed</p>
+        <h1 class="title">Choose who reads, and how fast.</h1>
+        <p class="lead">Both choices are remembered on this device, so you set them once.</p>
+      </div>
+      <div class="ac">
+        <span><b>AC 10</b> four Aura-2 voices, remembered</span>
+        <span><b>AC 9</b> five speeds, remembered</span>
+      </div>
+    </div>
+
+    <div class="prefs">
+      <div class="card">
+        <h3>Voice</h3>
+        <p class="sub">Four natural voices from Deepgram Aura-2.</p>
+        <div class="voices" role="radiogroup" aria-label="Voice">
+          <button class="voice on" role="radio" aria-checked="true" data-voice="Thalia"><span class="dot"></span><span><span class="nm">Thalia</span><br><span class="ch">Warm, unhurried</span></span></button>
+          <button class="voice" role="radio" aria-checked="false" data-voice="Andromeda"><span class="dot"></span><span><span class="nm">Andromeda</span><br><span class="ch">Clear, bright</span></span></button>
+          <button class="voice" role="radio" aria-checked="false" data-voice="Arcas"><span class="dot"></span><span><span class="nm">Arcas</span><br><span class="ch">Smooth, low</span></span></button>
+          <button class="voice" role="radio" aria-checked="false" data-voice="Apollo"><span class="dot"></span><span><span class="nm">Apollo</span><br><span class="ch">Confident, steady</span></span></button>
+        </div>
+        <p class="remember"><i></i>Remembered on this device</p>
+      </div>
+      <div class="card">
+        <h3>Reading speed</h3>
+        <p class="sub">Changes take effect on the next word, not the next section.</p>
+        <div class="speeds" role="radiogroup" aria-label="Speed">
+          <button class="speed" role="radio" aria-checked="false" data-speed="1.0×">1.0×</button>
+          <button class="speed on" role="radio" aria-checked="true" data-speed="1.2×">1.2×</button>
+          <button class="speed" role="radio" aria-checked="false" data-speed="1.5×">1.5×</button>
+          <button class="speed" role="radio" aria-checked="false" data-speed="1.7×">1.7×</button>
+          <button class="speed" role="radio" aria-checked="false" data-speed="2.0×">2.0×</button>
+        </div>
+        <p class="remember"><i></i>Remembered on this device</p>
+        <p class="hint" style="margin-top:22px">Your Deepgram key stays on the server. It is never sent to this page.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN 4: INSTALL -->
+  <section class="screen" data-screen="4">
+    <div class="screen-head">
+      <div>
+        <p class="kicker">Install on your phone</p>
+        <h1 class="title">Put Spoken on your home screen.</h1>
+        <p class="lead">It opens full screen like any app, with the player controls on your lock screen and headphones.</p>
+      </div>
+      <div class="ac">
+        <span><b>AC 15</b> installable on iOS and Android</span>
+        <span><b>AC 16</b> one stable address</span>
+      </div>
+    </div>
+
+    <div class="install">
+      <div class="card">
+        <h3>iPhone</h3>
+        <p class="sub">In Safari, from your Spoken address:</p>
+        <ol>
+          <li>Tap the <b>Share</b> button at the bottom of the screen.</li>
+          <li>Choose <b>Add to Home Screen</b>.</li>
+          <li>Tap <b>Add</b>. Spoken appears with the other apps.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>Android</h3>
+        <p class="sub">In Chrome, from your Spoken address:</p>
+        <ol>
+          <li>Tap <b>Install</b> in the bar that appears at the bottom, or</li>
+          <li>Open the <b>three-dot menu</b> and choose <b>Install app</b>.</li>
+          <li>Tap <b>Install</b>. Spoken appears with the other apps.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="urlbox">
+      <span class="u">Your Spoken address is given to you at delivery.</span>
+      <small>It does not change. Bookmark it, or install from it and forget it.</small>
+    </div>
+    <p class="offline">Spoken itself opens instantly once installed. Adding documents and hearing them read needs a connection, because the voices are generated on the server.</p>
+  </section>
+
+</main>
+
+<footer class="wrap colophon">
+  <span>Spoken, a proposal mockup by BMA Dev Team. Sample documents; no real audio or backend.</span>
+  <span>Screens: Library, Reader, Voice and speed, Install</span>
+</footer>
+
+<script>
+(function(){
+  var $=function(s,c){return (c||document).querySelector(s)};
+  var $$=function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
+
+  /* Screen navigation */
+  function go(n){
+    $$('.screen').forEach(function(s){s.classList.toggle('active',s.getAttribute('data-screen')===String(n))});
+    $$('.step').forEach(function(b){var on=b.getAttribute('data-go')===String(n);b.classList.toggle('active',on);b.setAttribute('aria-selected',on?'true':'false')});
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  $$('[data-go]').forEach(function(b){b.addEventListener('click',function(){go(b.getAttribute('data-go'))})});
+
+  /* Library: opening a document goes to the reader and restores its place */
+  var docs={1:{t:'Q3 board memo',p:62,s:14},2:{t:'Annual report 2025',p:18,s:9},3:{t:'Notes on attention',p:100,s:6},4:{t:'Lease agreement, 14 Elm Street',p:0,s:1}};
+  var current=1;
+  function setProgress(p){ $('#barFill').style.width=p+'%'; $('#pct').textContent=Math.round(p)+'%'; }
+  $$('[data-open]').forEach(function(b){b.addEventListener('click',function(){
+    stop(); var id=b.getAttribute('data-open'); current=id;
+    $$('[data-open]').forEach(function(x){x.classList.toggle('current',x.getAttribute('data-open')===id)});
+    $('#docTitle').textContent=docs[id].t; $('#secNo').textContent=docs[id].s; setProgress(docs[id].p);
+    $('#status').textContent='Opened at your saved place.'; go(2);
+  })});
+
+  /* Add document: a simulated pick */
+  $('#addBtn').addEventListener('click',function(){
+    var btn=this; btn.disabled=true; btn.textContent='Reading the file on this device...';
+    setTimeout(function(){
+      var li=document.createElement('li');
+      li.innerHTML='<button class="doc" data-open="5"><h3 class="doc-title">Product strategy, second draft</h3><span class="doc-pct">Not started</span><p class="doc-meta">PDF, 22 pages. Added just now.</p><span class="doc-bar"><i style="width:0%"></i></span></button>';
+      $('#lib').insertBefore(li,$('#lib').firstElementChild);
+      docs[5]={t:'Product strategy, second draft',p:0,s:1};
+      li.querySelector('button').addEventListener('click',function(){stop();current=5;$('#docTitle').textContent=docs[5].t;$('#secNo').textContent=1;setProgress(0);go(2)});
+      btn.disabled=false; btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> Choose a file';
+      $('#addHint').textContent='Saved. Only the text was kept; the file was not uploaded.';
+    },1400);
+  });
+
+  /* Reader: the lit section walks through the page while playing */
+  var secs=$$('.sec'); var idx=secs.findIndex(function(s){return s.classList.contains('speaking')}); var timer=null; var playing=false;
+  var playBtn=$('#play');
+  function light(i){ secs.forEach(function(s,k){s.classList.toggle('speaking',k===i)}); $('#secNo').textContent=12+i; }
+  function tick(){ idx=(idx+1)%secs.length; light(idx); setProgress(Math.min(100,parseFloat($('#barFill').style.width||'62')+2.4)); }
+  function start(){
+    playing=true; playBtn.classList.add('busy'); playBtn.setAttribute('aria-label','Pause'); playBtn.title='Pause';
+    $('#status').textContent='Fetching the next section while this one plays...';
+    setTimeout(function(){ if(!playing) return; playBtn.classList.remove('busy'); playBtn.classList.add('on'); $('#status').textContent='Playing. The next section is already loaded.'; timer=setInterval(tick,2600); },700);
+  }
+  function stop(){
+    playing=false; clearInterval(timer); playBtn.classList.remove('on','busy'); playBtn.setAttribute('aria-label','Play'); playBtn.title='Play';
+    $('#status').textContent='Paused. Your place is saved.';
+  }
+  playBtn.addEventListener('click',function(){ playing?stop():start(); });
+  $('#nextSec').addEventListener('click',function(){ idx=Math.min(secs.length-1,idx+1); light(idx); $('#status').textContent='Moved to the next section. Place saved.'; });
+  $('#prevSec').addEventListener('click',function(){ idx=Math.max(0,idx-1); light(idx); $('#status').textContent='Moved to the previous section. Place saved.'; });
+  $('#fwd15').addEventListener('click',function(){ setProgress(Math.min(100,parseFloat($('#barFill').style.width)+0.6)); $('#status').textContent='Forward 15 seconds within this section.'; });
+  $('#back15').addEventListener('click',function(){ setProgress(Math.max(0,parseFloat($('#barFill').style.width)-0.6)); $('#status').textContent='Back 15 seconds within this section.'; });
+
+  /* Read selection: appears when text on the page is highlighted */
+  var selBtn=$('#selBtn');
+  function checkSel(){
+    var sel=window.getSelection(); var has=sel && !sel.isCollapsed && $('#page').contains(sel.anchorNode);
+    selBtn.classList.toggle('show',!!has);
+  }
+  document.addEventListener('selectionchange',checkSel);
+  selBtn.addEventListener('click',function(){
+    var sel=window.getSelection(); var node=sel.anchorNode&&sel.anchorNode.parentElement; var s=node&&node.closest('.sec');
+    if(s){ idx=secs.indexOf(s); light(idx); }
+    sel.removeAllRanges(); selBtn.classList.remove('show');
+    if(!playing) start(); $('#status').textContent='Reading your selection, then carrying on from where it ends.';
+  });
+
+  /* Voice and speed: remembered, and shown on the reader's chip */
+  $$('.voice').forEach(function(b){b.addEventListener('click',function(){
+    $$('.voice').forEach(function(x){var on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-checked',on?'true':'false')});
+    $('#prefVoice').textContent=b.getAttribute('data-voice');
+  })});
+  $$('.speed').forEach(function(b){b.addEventListener('click',function(){
+    $$('.speed').forEach(function(x){var on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-checked',on?'true':'false')});
+    $('#prefSpeed').textContent=b.getAttribute('data-speed');
+  })});
+})();
+</script>
+</body>
+</html>
