@@ -166,6 +166,23 @@
   .urlbox small{color:var(--ink-mut);font-size:13.5px}
   .offline{margin-top:14px;font-size:13.5px;color:var(--on-dusk-mut)}
 
+  /* Settings (sign-in and key, mirroring the deposition build) */
+  .provider{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .provider button{border:1px solid var(--dusk-3);background:transparent;border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:500;color:var(--on-dusk-mut);display:inline-flex;gap:8px;align-items:center}
+  .provider button.on{background:var(--ivory);color:var(--ink);border-color:var(--ivory)}
+  .provider button[disabled]{cursor:not-allowed;opacity:.55}
+  .provider .v2{font-size:11px;border:1px solid currentColor;border-radius:5px;padding:1px 6px}
+  .keystatus{margin:16px 0 0;font-size:14.5px;color:var(--on-dusk);padding:12px 14px;border-radius:10px;background:rgba(111,169,127,.12);border:1px solid rgba(111,169,127,.35)}
+  .keystatus.none{background:rgba(240,181,74,.10);border-color:rgba(240,181,74,.4)}
+  .keyrow{display:flex;gap:8px;margin-top:6px}
+  .tin{flex:1;min-width:0;border:1px solid var(--dusk-3);background:var(--dusk);color:var(--on-dusk);border-radius:10px;padding:12px 14px;font:inherit}
+  .tin::placeholder{color:var(--on-dusk-mut)}
+  .keyactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .signin-line{margin:0 0 14px;font-size:14.5px;color:var(--on-dusk-mut)}
+  .signin-line b{color:var(--on-dusk);font-weight:500}
+  .costnote{margin-top:22px;padding:14px;border:1px dashed var(--dusk-3);border-radius:10px;font-size:14px;color:var(--on-dusk-mut)}
+  .costnote b{color:var(--on-dusk);font-weight:500}
+
   .colophon{border-top:1px solid var(--dusk-3);margin-top:20px;padding:22px 0 36px;font-size:12.5px;color:var(--on-dusk-mut);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
 
   /* Phone layout */
@@ -212,6 +229,7 @@
     <button class="step" role="tab" aria-selected="false" data-go="2"><div class="step-num">2</div><div class="step-label">Reader</div></button>
     <button class="step" role="tab" aria-selected="false" data-go="3"><div class="step-num">3</div><div class="step-label">Voice and speed</div></button>
     <button class="step" role="tab" aria-selected="false" data-go="4"><div class="step-num">4</div><div class="step-label">Install on your phone</div></button>
+    <button class="step" role="tab" aria-selected="false" data-go="5"><div class="step-num">5</div><div class="step-label">Settings</div></button>
   </nav>
 </div>
 
@@ -385,7 +403,6 @@
           <button class="speed" role="radio" aria-checked="false" data-speed="2.0×">2.0×</button>
         </div>
         <p class="remember"><i></i>Remembered on this device</p>
-        <p class="hint" style="margin-top:22px">Your Deepgram key stays on the server. It is never sent to this page.</p>
       </div>
     </div>
   </section>
@@ -432,11 +449,59 @@
     <p class="offline">Spoken itself opens instantly once installed. Adding documents and hearing them read needs a connection, because the voices are generated on the server.</p>
   </section>
 
+  <!-- SCREEN 5: SETTINGS (sign-in and key, as on the deposition build) -->
+  <section class="screen" data-screen="5">
+    <div class="screen-head">
+      <div>
+        <p class="kicker">Settings</p>
+        <h1 class="title">Connect your voice service.</h1>
+        <p class="lead">Spoken uses your own Deepgram account, so there is no middleman and you control spend. Paste your key once here; it is stored encrypted on the server and never shown again in full.</p>
+      </div>
+      <div class="ac">
+        <span><b>AC 11</b> key held server-side only</span>
+        <span><b>AC 13</b> one provider seam, more in v2</span>
+      </div>
+    </div>
+
+    <div class="prefs">
+      <div class="card">
+        <h3>Voice service</h3>
+        <p class="sub">Pick your provider and paste the API key from your account.</p>
+        <p class="kicker" style="margin-top:14px">Provider</p>
+        <div class="provider" role="radiogroup" aria-label="Provider">
+          <button role="radio" aria-checked="true" class="on">Deepgram</button>
+          <button role="radio" aria-checked="false" disabled title="Coming in v2">ElevenLabs <span class="v2">v2</span></button>
+        </div>
+        <p class="keystatus" id="keyStatus" role="status">A key is saved (ending <b>...k1l2</b>), set today at 3:14 PM. Documents can be read aloud.</p>
+        <label class="kicker" for="apiKey" style="display:block;margin-top:14px">API key</label>
+        <div class="keyrow">
+          <input class="tin" type="password" id="apiKey" autocomplete="off" placeholder="Paste a new key to replace the saved one" aria-label="API key">
+          <button class="btn" id="showKey" aria-pressed="false" aria-label="Show the API key you are typing">Show</button>
+        </div>
+        <div class="keyactions">
+          <button class="btn primary" id="saveKey" disabled aria-label="Save the API key">Save key</button>
+          <button class="btn" id="removeKey" aria-label="Remove the saved API key">Remove the saved key</button>
+        </div>
+        <p class="hint" id="keyHint">Save key turns on once a key is pasted.</p>
+      </div>
+      <div class="card">
+        <h3>Sign-in</h3>
+        <p class="sub">You are the only person who signs in here.</p>
+        <p class="signin-line">Signed in as <b>tim@example.com</b>. Your username is your email address; you chose your password on your first visit, and nobody else, including us, knows or can see it.</p>
+        <button class="btn" id="changePw">Change password</button>
+        <p class="hint" style="margin-top:18px">Repeated wrong passwords lock sign-in for a while. In v2, accounts replace this single sign-in.</p>
+        <div class="costnote">
+          <b>What this costs.</b> Deepgram Aura-2 is $0.03 per 1,000 characters, about $6 per 100 pages listened to, billed to your Deepgram account. New accounts start with $200 of free credit.
+        </div>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <footer class="wrap colophon">
   <span>Spoken, a proposal mockup by BMA Dev Team. Sample documents; no real audio or backend.</span>
-  <span>Screens: Library, Reader, Voice and speed, Install</span>
+  <span>Screens: Library, Reader, Voice and speed, Install, Settings</span>
 </footer>
 
 <script>
@@ -510,6 +575,17 @@
     sel.removeAllRanges(); selBtn.classList.remove('show');
     if(!playing) start(); $('#status').textContent='Reading your selection, then carrying on from where it ends.';
   });
+
+  /* Settings: key entry behaves like the deposition build's Settings screen */
+  var keyIn=$('#apiKey'), saveKey=$('#saveKey'), showKey=$('#showKey'), keyStatus=$('#keyStatus'), keyHint=$('#keyHint');
+  keyIn.addEventListener('input',function(){ saveKey.disabled=!keyIn.value.trim(); keyHint.textContent=keyIn.value.trim()?'Saving replaces the key ending ...k1l2.':'Save key turns on once a key is pasted.'; });
+  showKey.addEventListener('click',function(){ var show=keyIn.type==='password'; keyIn.type=show?'text':'password'; showKey.textContent=show?'Hide':'Show'; showKey.setAttribute('aria-pressed',show?'true':'false'); });
+  saveKey.addEventListener('click',function(){
+    var v=keyIn.value.trim(); if(!v) return; saveKey.disabled=true; saveKey.textContent='Saving...';
+    setTimeout(function(){ keyStatus.classList.remove('none'); keyStatus.innerHTML='A key is saved (ending <b>...'+v.slice(-4)+'</b>), set just now. Documents can be read aloud.'; keyIn.value=''; keyIn.type='password'; showKey.textContent='Show'; saveKey.textContent='Save key'; keyHint.textContent='Saved. The key is stored encrypted on the server and is not shown again in full.'; },700);
+  });
+  $('#removeKey').addEventListener('click',function(){ keyStatus.classList.add('none'); keyStatus.textContent='No key is saved. Documents cannot be read aloud until you paste one.'; keyIn.placeholder='Paste your key'; keyHint.textContent='Removed.'; });
+  $('#changePw').addEventListener('click',function(){ this.textContent='Opens the change-password screen'; });
 
   /* Voice and speed: remembered, and shown on the reader's chip */
   $$('.voice').forEach(function(b){b.addEventListener('click',function(){
