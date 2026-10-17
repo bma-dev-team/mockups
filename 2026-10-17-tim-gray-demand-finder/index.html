@@ -1,0 +1,1417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demand Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#E3E9E6;
+    --panel:#F7F9F8;
+    --panel-2:#EEF2F0;
+    --ink:#15302B;
+    --ink-2:#4A5F5A;
+    --ink-3:#71847F;
+    --rule:#C4CFCA;
+    --rule-soft:#D9E1DD;
+    --signal:#1E7768;
+    --signal-2:#2C9A87;
+    --signal-soft:#D2E8E2;
+    --signal-off:#C9D4D0;
+    --human:#F0A531;
+    --human-soft:#FCEBCB;
+    --human-ink:#6A4100;
+    --prompt:#3A62A8;
+    --prompt-soft:#E3EAF7;
+    --error:#B0372D;
+    --error-soft:#F6DEDA;
+    --pos:#2C7A43;
+    --neg:#B0372D;
+    --desk:#15302B;
+    --desk-ink:#E3ECE8;
+    --desk-dim:#93ABA4;
+    --r-panel:6px;
+    --r-ctl:4px;
+    --font:'Archivo', system-ui, sans-serif;
+    --gutter:16px;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none !important}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.5;font-variation-settings:"wdth" 100}
+  a{color:var(--signal)}
+  button,input,select,textarea{font:inherit;color:inherit}
+  :focus-visible{outline:2px solid var(--prompt);outline-offset:2px}
+  .num{font-variant-numeric:tabular-nums}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 var(--gutter)}
+
+  /* ---------- Masthead: the desk ---------- */
+  .masthead{background:var(--desk);color:var(--desk-ink)}
+  .masthead .wrap{display:flex;align-items:center;gap:14px;min-height:58px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:750;font-size:19px;letter-spacing:.01em;font-variation-settings:"wdth" 118}
+  .brand small{font-weight:450;font-size:12.5px;color:var(--desk-dim);font-variation-settings:"wdth" 100;letter-spacing:0}
+  .sweep{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--signal-2);position:relative;flex:none;overflow:hidden}
+  .sweep::before{content:"";position:absolute;inset:0;background:conic-gradient(from 0deg, rgba(44,154,135,.65), rgba(44,154,135,0) 28%);animation:spin 4s linear infinite}
+  .sweep::after{content:"";position:absolute;width:4px;height:4px;border-radius:50%;background:var(--human);top:6px;left:15px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.sweep::before{animation:none}}
+  .spacer{flex:1}
+  .listening{font-size:13px;color:var(--desk-dim)}
+  .listening b{color:var(--desk-ink);font-weight:600}
+  .who{font-size:13px;color:var(--desk-ink);border:1px solid #2F4D47;border-radius:999px;padding:3px 10px}
+
+  .navband{background:var(--desk);border-top:1px solid #24443E}
+  .stepper{display:flex;gap:2px;flex-wrap:wrap}
+  .step{appearance:none;background:none;border:0;color:var(--desk-dim);padding:12px 14px 11px;cursor:pointer;display:flex;align-items:center;gap:8px;border-bottom:3px solid transparent;min-height:44px}
+  .step:hover{color:var(--desk-ink)}
+  .step .step-label{font-weight:550;font-size:14.5px}
+  .step.active{color:#fff;border-bottom-color:var(--signal-2)}
+  .step .count{font-size:12px;font-weight:700;background:var(--human);color:var(--human-ink);border-radius:999px;padding:0 7px;line-height:19px}
+
+  /* ---------- Screens ---------- */
+  main.wrap{padding-top:28px;padding-bottom:80px}
+  .screen{display:none}
+  .screen.active{display:block}
+  .screen-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px 24px;flex-wrap:wrap;margin-bottom:18px}
+  .screen-head h1{margin:0;font-size:34px;line-height:1.05;font-weight:780;font-variation-settings:"wdth" 72;letter-spacing:-.005em}
+  .screen-head p{margin:6px 0 0;color:var(--ink-2);max-width:62ch}
+  .acs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
+  .ac{font-size:11.5px;font-weight:600;color:#5B4A8A;background:#ECE7F6;border:1px dashed #B9ACD9;border-radius:999px;padding:1px 9px;white-space:nowrap}
+  .ac-inline{margin-left:6px;vertical-align:2px}
+
+  .panel{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-panel)}
+  .panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--rule-soft)}
+  .panel-h h2,.panel-h h3{margin:0;font-size:17px;font-weight:700}
+  .panel-b{padding:16px 18px}
+  .muted{color:var(--ink-2)}
+  .small{font-size:13px}
+  .tiny{font-size:12px}
+
+  /* Buttons */
+  .btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--r-ctl);border:1px solid var(--rule);background:var(--panel);padding:7px 13px;font-weight:600;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink);min-height:36px;white-space:nowrap}
+  .btn:hover{border-color:var(--ink-3)}
+  .btn.primary{background:var(--signal);border-color:var(--signal);color:#fff}
+  .btn.primary:hover{background:#185F53}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--ink-2)}
+  .btn.ghost:hover{color:var(--ink);border-color:var(--rule)}
+  .btn.approve{background:var(--human);border-color:#D88F1C;color:var(--human-ink)}
+  .btn.approve:hover{background:#E89A20}
+  .btn.danger-ghost{background:transparent;color:var(--error);border-color:transparent}
+  .btn.sm{padding:4px 10px;min-height:30px;font-size:13px}
+  .btn:disabled,.btn[disabled]{opacity:.42;cursor:not-allowed}
+  button.btn:disabled{pointer-events:auto}
+  .btn .spin{width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+  .gate-reason{font-size:12.5px;color:var(--ink-2);margin:5px 0 0}
+  .v2{font-size:11px;font-weight:700;color:var(--ink-2);background:var(--panel-2);border:1px solid var(--rule);border-radius:3px;padding:0 5px;line-height:17px}
+
+  /* Chips */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;border-radius:999px;padding:1px 9px;line-height:19px;white-space:nowrap;border:1px solid transparent}
+  .chip.src{background:var(--panel-2);border-color:var(--rule);color:var(--ink-2)}
+  .st-new{background:#E6ECEA;color:#3E524D}
+  .st-drafted{background:#E3EAF7;color:#2E4F8A}
+  .st-approved{background:var(--signal-soft);color:#155A4E}
+  .st-contacted{background:#DCE9E4;color:#1D5F51}
+  .st-replied{background:#D8EEDD;color:#22663A}
+  .st-converted{background:#2C7A43;color:#fff}
+  .st-optout{background:#ECE4E2;color:#6C4B45}
+  .st-bounced{background:var(--error-soft);color:var(--error)}
+  .st-await{background:var(--human-soft);color:var(--human-ink);border-color:#E9C27A}
+  .st-await::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--human)}
+
+  /* Forms */
+  label.lbl{display:block;font-weight:600;font-size:13.5px;margin:0 0 4px}
+  .lbl .opt{font-weight:400;color:var(--ink-3)}
+  .req-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--prompt);background:var(--prompt-soft);border-radius:3px;padding:0 5px;margin-left:6px;vertical-align:1px}
+  .field{margin-bottom:14px;min-width:0}
+  .inp{width:100%;min-width:0;border:1px solid var(--rule);border-radius:var(--r-ctl);background:#fff;padding:8px 10px;min-height:38px}
+  textarea.inp{min-height:76px;resize:vertical;line-height:1.45}
+  .inp::placeholder{color:#97A6A2}
+  .inp:focus{border-color:var(--prompt);outline:none;box-shadow:0 0 0 3px var(--prompt-soft)}
+  .field.req .inp:placeholder-shown{background:var(--prompt-soft);border-color:#9DB3DB;border-bottom:2px solid var(--prompt)}
+  .field.req:has(.inp:not(:placeholder-shown)) .req-tag,
+  .field.req:has(.inp:not(:placeholder-shown)) .hint-empty{display:none}
+  .hint{font-size:12.5px;color:var(--ink-2);margin-top:4px}
+  .hint-empty{color:var(--prompt)}
+  .hint-invalid{color:var(--error);display:none}
+  .field.invalid .inp{border-color:var(--error);background:#fff}
+  .field.invalid .hint-invalid{display:block}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .row > .inp{flex:1 1 160px}
+  .reveal{min-width:64px}
+  .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px}
+  .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 18px}
+  .check{display:flex;gap:9px;align-items:flex-start;cursor:pointer}
+  .check input{margin-top:3px;accent-color:var(--signal);width:16px;height:16px;flex:none}
+  .switch{position:relative;display:inline-block;width:40px;height:22px;flex:none}
+  .switch input{opacity:0;width:100%;height:100%;margin:0;position:absolute;inset:0;cursor:pointer;z-index:1}
+  .switch span{position:absolute;inset:0;background:var(--signal-off);border-radius:999px;transition:background .15s}
+  .switch span::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s}
+  .switch input:checked + span{background:var(--signal)}
+  .switch input:checked + span::after{transform:translateX(18px)}
+  .switch input:disabled{cursor:not-allowed}
+  .switch input:disabled + span{opacity:.5}
+  .switch input:focus-visible + span{outline:2px solid var(--prompt);outline-offset:2px}
+
+  /* ---------- Screen 1: Matches ---------- */
+  .desk-bar{display:flex;gap:10px 18px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-panel);margin-bottom:14px;font-size:13.5px}
+  .threshold-line{display:flex;align-items:center;gap:8px}
+  .thr-gauge{width:120px;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--signal-off) 0 60%,var(--signal-2) 60% 100%);position:relative}
+  .thr-gauge::after{content:"";position:absolute;left:60%;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+  .signals{display:flex;flex-direction:column;gap:10px}
+  .signal{display:grid;grid-template-columns:86px minmax(0,1fr);background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-panel);overflow:hidden}
+  .signal.dismissed{opacity:.55}
+  .strength{background:var(--panel-2);border-right:1px solid var(--rule-soft);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px 6px}
+  .score{font-size:34px;font-weight:800;line-height:1;font-variation-settings:"wdth" 70;font-variant-numeric:tabular-nums}
+  .meter{display:flex;gap:2px;align-items:flex-end;height:22px}
+  .meter i{width:4px;background:var(--signal-off);border-radius:1px}
+  .meter i.on{background:var(--signal)}
+  .strength small{font-size:11px;color:var(--ink-3)}
+  .sig-body{padding:13px 16px 14px;min-width:0}
+  .sig-meta{display:flex;gap:6px 10px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--ink-2)}
+  .sig-meta .author{font-weight:650;color:var(--ink)}
+  .excerpt{margin:8px 0 6px;font-size:16px;line-height:1.45;max-width:72ch}
+  .reason{margin:0 0 10px;font-size:13.5px;color:var(--ink-2);display:flex;gap:6px;max-width:80ch}
+  .reason::before{content:"";flex:none;width:3px;border-radius:2px;background:var(--signal-2);margin:2px 0}
+  .sig-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .nr-box{margin-top:10px;padding:10px 12px;background:var(--panel-2);border-radius:var(--r-ctl);border:1px solid var(--rule-soft)}
+  .below{padding:12px 14px;border:1px dashed var(--rule);border-radius:var(--r-panel);color:var(--ink-2);font-size:13.5px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--desk);color:#fff;padding:10px 16px;border-radius:6px;font-size:14px;z-index:20;max-width:calc(100vw - 32px)}
+
+  /* ---------- Screen 2: Queue ---------- */
+  .filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+  .filters label{font-size:12.5px;font-weight:600;color:var(--ink-2);display:block;margin-bottom:3px}
+  .viewas{display:inline-flex;border:1px solid var(--rule);border-radius:var(--r-ctl);overflow:hidden;background:var(--panel)}
+  .viewas button{border:0;background:none;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink-2)}
+  .viewas button[aria-pressed="true"]{background:var(--ink);color:#fff}
+  .batchbar{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding:10px 14px;background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-panel);margin-bottom:12px}
+  .drafts{display:flex;flex-direction:column;gap:12px}
+  .draft{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-panel);border-left:4px solid var(--rule)}
+  .draft.awaiting{border-left-color:var(--human)}
+  .draft.ready{border-left-color:var(--signal)}
+  .draft.refused{border-left-color:var(--error)}
+  .draft-h{display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--rule-soft)}
+  .draft-h .to{font-weight:700}
+  .draft-b{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;padding:14px 16px}
+  .msg{background:#fff;border:1px solid var(--rule-soft);border-radius:var(--r-ctl);padding:12px 14px;white-space:pre-line;font-size:14.5px;line-height:1.5}
+  .msg[contenteditable="true"]{outline:2px solid var(--prompt-soft)}
+  .disclosure{margin-top:8px;font-size:13px;color:var(--ink-2)}
+  .disclosure b{color:var(--ink)}
+  .facts h4,.meta-list h4{margin:0 0 6px;font-size:13px;font-weight:700}
+  .facts ul{margin:0;padding:0;list-style:none;font-size:13px}
+  .facts li{padding:6px 0;border-top:1px solid var(--rule-soft);display:flex;gap:8px;justify-content:space-between;align-items:flex-start}
+  .facts li span:first-child{min-width:0}
+  .from-tag{font-size:11px;font-weight:600;color:var(--ink-3);white-space:nowrap}
+  .meta-list dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;margin:0;font-size:13px}
+  .meta-list dt{color:var(--ink-2)}
+  .meta-list dd{margin:0;font-weight:550;min-width:0;overflow-wrap:anywhere}
+  .capbar{height:6px;background:var(--rule-soft);border-radius:3px;overflow:hidden;margin-top:4px}
+  .capbar i{display:block;height:100%;background:var(--signal)}
+  .footer-preview{margin-top:10px;padding:9px 12px;border:1px dashed var(--rule);border-radius:var(--r-ctl);font-size:12px;color:var(--ink-2);line-height:1.45}
+  .draft-f{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 16px 14px}
+  .refusal{margin:0;padding:10px 12px;background:var(--error-soft);color:#7A2219;border-radius:var(--r-ctl);font-size:14px}
+  .contrib-note{display:none;padding:9px 12px;background:var(--panel-2);border:1px solid var(--rule);border-radius:var(--r-ctl);font-size:13px;margin-bottom:12px}
+  body.contributor .contrib-note{display:block}
+  .approved-by{font-size:12.5px;color:var(--ink-2)}
+
+  /* ---------- Screen 3: Contacts ---------- */
+  .split{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;align-items:start}
+  .split-res{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}
+  .tbl-wrap{overflow-x:auto}
+  table.tbl{width:100%;border-collapse:collapse;font-size:14px}
+  .tbl th{text-align:left;font-size:12.5px;font-weight:650;color:var(--ink-2);padding:9px 12px;border-bottom:1px solid var(--rule)}
+  .tbl td{padding:10px 12px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+  .tbl tr.sel td{background:var(--signal-soft)}
+  .tbl tr[data-pick]{cursor:pointer}
+  .tbl tr[data-pick]:hover td{background:#E9F1EE}
+  .tbl .nm{font-weight:650}
+  .statusfilter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .timeline{list-style:none;margin:0;padding:0;position:relative}
+  .timeline li{position:relative;padding:0 0 14px 22px}
+  .timeline li::before{content:"";position:absolute;left:5px;top:6px;bottom:-6px;width:1px;background:var(--rule)}
+  .timeline li:last-child::before{display:none}
+  .timeline li::after{content:"";position:absolute;left:1px;top:5px;width:9px;height:9px;border-radius:50%;background:var(--panel);border:2px solid var(--signal)}
+  .timeline li.ev-reply::after{background:var(--pos);border-color:var(--pos)}
+  .timeline li.ev-human::after{background:var(--human);border-color:#D88F1C}
+  .tl-when{font-size:12px;color:var(--ink-3)}
+  .tl-what{font-size:14px}
+  .tl-link{display:inline-block;margin-top:3px;font-size:12.5px;background:var(--panel-2);border:1px solid var(--rule-soft);border-radius:3px;padding:1px 6px;overflow-wrap:anywhere}
+  .import{border:1px solid var(--rule);border-radius:var(--r-panel);background:var(--panel);margin-bottom:16px}
+  .import-steps{display:flex;gap:0;border-bottom:1px solid var(--rule-soft);flex-wrap:wrap}
+  .import-steps span{padding:10px 16px;font-size:13px;font-weight:600;color:var(--ink-3);border-bottom:2px solid transparent}
+  .import-steps span.on{color:var(--ink);border-bottom-color:var(--signal)}
+  .dropzone{position:relative;border:1.5px dashed var(--rule);border-radius:var(--r-panel);padding:22px;text-align:center;background:#fff;color:var(--ink-2)}
+  .dropzone.has{border-style:solid;border-color:var(--signal);text-align:left;color:var(--ink)}
+  .dz-x{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:1px solid var(--rule);background:var(--panel);cursor:pointer;font-size:15px;line-height:1}
+  .mapgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 14px;align-items:center;font-size:14px}
+  .mapgrid .col{font-weight:600}
+  .rej{color:var(--error);font-weight:600}
+
+  /* ---------- Screen 4: Results ---------- */
+  .resfilters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:16px;align-items:end}
+  .resfilters label{font-size:12.5px;font-weight:600;color:var(--ink-2);display:block;margin-bottom:3px}
+  .kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border:1px solid var(--rule);border-radius:var(--r-panel);background:var(--panel);margin-bottom:16px}
+  .kpi{padding:14px 16px;border-left:1px solid var(--rule-soft)}
+  .kpi:first-child{border-left:0}
+  .kpi .k-label{font-size:12.5px;color:var(--ink-2);font-weight:550}
+  .kpi .k-val{font-size:30px;font-weight:780;line-height:1.1;font-variation-settings:"wdth" 74;font-variant-numeric:tabular-nums}
+  .kpi .k-delta{font-size:12.5px;font-weight:650;font-variant-numeric:tabular-nums}
+  .pos{color:var(--pos)}
+  .neg{color:var(--neg)}
+  .channels{display:flex;flex-direction:column}
+  .chan{display:grid;grid-template-columns:150px minmax(0,1fr) 120px;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--rule-soft)}
+  .chan:first-child{border-top:0}
+  .chan.best{background:linear-gradient(90deg,var(--signal-soft),transparent 70%);margin:0 -18px;padding-left:18px;padding-right:18px}
+  .chan .cn{font-weight:650}
+  .chan .bar{height:14px;background:var(--rule-soft);border-radius:2px;position:relative}
+  .chan .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--signal);border-radius:2px}
+  .chan .nodata{font-size:13px;color:var(--ink-2);font-style:italic}
+  .chan .cv{text-align:right;font-variant-numeric:tabular-nums;font-size:13.5px}
+  .best-flag{font-size:11.5px;font-weight:700;color:#fff;background:var(--signal);border-radius:3px;padding:0 6px;margin-left:6px;white-space:nowrap;display:inline-block}
+  .noisy li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:8px 0;border-top:1px solid var(--rule-soft);font-size:14px}
+  .noisy ul{list-style:none;margin:0;padding:0}
+
+  /* ---------- Screen 5: Themes ---------- */
+  .themes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .theme{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-panel);padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+  .theme h3{margin:0;font-size:19px;font-weight:720;font-variation-settings:"wdth" 88;line-height:1.2}
+  .theme .cnt{display:flex;align-items:baseline;gap:8px}
+  .theme .cnt b{font-size:26px;font-weight:800;font-variation-settings:"wdth" 70;font-variant-numeric:tabular-nums}
+  .theme blockquote{margin:0;padding:10px 12px;background:#fff;border-left:3px solid var(--signal-2);border-radius:0 var(--r-ctl) var(--r-ctl) 0;font-size:14.5px}
+  .theme .tsrc{font-size:12.5px;color:var(--ink-2)}
+
+  /* ---------- Screen 6: Settings ---------- */
+  .settings-layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:22px;align-items:start}
+  .settings-toc{position:sticky;top:12px;display:flex;flex-direction:column;gap:2px;font-size:14px}
+  .settings-toc a{color:var(--ink-2);text-decoration:none;padding:6px 10px;border-radius:var(--r-ctl)}
+  .settings-toc a:hover{background:var(--panel);color:var(--ink)}
+  .cards{display:flex;flex-direction:column;gap:16px}
+  .card{scroll-margin-top:12px}
+  .sub{font-size:14px;font-weight:700;margin:4px 0 8px}
+  .srcrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 14px;align-items:start;padding:12px 0;border-top:1px solid var(--rule-soft)}
+  .srcrow:first-of-type{border-top:0}
+  .srcrow h4{margin:0;font-size:15px}
+  .kwtable td,.kwtable th{white-space:nowrap}
+  .kwtable td:first-child{white-space:normal;min-width:180px}
+  .dns{list-style:none;margin:0;padding:0}
+  .dns li{display:grid;grid-template-columns:70px 64px minmax(0,1fr);gap:10px;padding:9px 0;border-top:1px solid var(--rule-soft);font-size:14px;align-items:start}
+  .pass{color:var(--pos);font-weight:700}
+  .fail{color:var(--error);font-weight:700}
+  code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px}
+  code{background:var(--panel-2);border:1px solid var(--rule-soft);border-radius:3px;padding:0 4px;overflow-wrap:anywhere}
+  pre{background:var(--desk);color:var(--desk-ink);padding:12px 14px;border-radius:var(--r-ctl);overflow-x:auto;margin:8px 0 0;line-height:1.5}
+  .usage{display:grid;grid-template-columns:140px minmax(0,1fr) 120px;gap:10px;align-items:center;font-size:14px;padding:6px 0}
+  .usage .capbar{height:10px;margin:0}
+  .note{padding:10px 12px;border-radius:var(--r-ctl);background:var(--panel-2);border:1px solid var(--rule);font-size:13.5px}
+  .roles{list-style:none;margin:0 0 12px;padding:0;font-size:14px}
+  .roles li{padding:6px 0;border-top:1px solid var(--rule-soft)}
+  .members td{font-size:14px}
+  .toolrow{display:flex;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--rule-soft)}
+  .toolrow:first-child{border-top:0}
+  .toolrow .grow{flex:1;min-width:0}
+  .toolrow.off{color:var(--ink-3)}
+  .suggest{margin-top:8px;padding:14px;border:1px solid #9DCBC0;background:#EDF6F3;border-radius:var(--r-panel)}
+  .suggest h4{margin:0 0 8px;font-size:14px}
+  .savebar{position:sticky;bottom:0;background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-panel);padding:12px 16px;display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap;margin-top:16px;box-shadow:0 -6px 16px rgba(21,48,43,.08)}
+  .savebar .gate-reason{margin:0}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:980px){
+    .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .kpi:nth-child(4){border-left:0}
+    .kpi:nth-child(n+4){border-top:1px solid var(--rule-soft)}
+    .resfilters{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .settings-layout{grid-template-columns:minmax(0,1fr)}
+    .settings-toc{position:static;flex-direction:row;flex-wrap:wrap}
+    .split,.split-res{grid-template-columns:minmax(0,1fr)}
+  }
+  @media (max-width:720px){
+    body{font-size:14.5px}
+    .listening{display:none}
+    .brand small{display:block;margin-top:1px}
+    .stepper{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+    .step{justify-content:center;padding:10px 4px 9px;min-height:44px}
+    .step .step-label{font-size:13.5px}
+    .screen-head h1{font-size:29px}
+    .signal{grid-template-columns:64px minmax(0,1fr)}
+    .score{font-size:27px}
+    .excerpt{font-size:15px}
+    .filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .draft-b{grid-template-columns:minmax(0,1fr)}
+    .grid2,.grid3{grid-template-columns:minmax(0,1fr)}
+    .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .kpi:nth-child(odd){border-left:0}
+    .kpi:nth-child(4){border-left:1px solid var(--rule-soft)}
+    .kpi:nth-child(n+3){border-top:1px solid var(--rule-soft)}
+    .resfilters{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .chan{grid-template-columns:minmax(0,1fr) auto;gap:6px 12px}
+    .chan .bar,.chan .nodata{grid-column:1 / -1;grid-row:2}
+    .themes{grid-template-columns:minmax(0,1fr)}
+    .usage{grid-template-columns:minmax(0,1fr) auto}
+    .usage .capbar{grid-column:1 / -1;grid-row:2}
+    .dns li{grid-template-columns:60px 50px minmax(0,1fr)}
+    .mapgrid{grid-template-columns:minmax(0,1fr)}
+    .mapgrid .col{margin-top:6px}
+    .savebar .btn.primary{width:100%}
+    .savebar{flex-direction:column;align-items:stretch;text-align:center;position:static;box-shadow:none}
+    .contacts-tbl .hide-sm{display:none}
+    .srcrow{grid-template-columns:auto minmax(0,1fr)}
+    .srcrow > div:last-child{grid-column:2}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="brand"><span class="sweep" aria-hidden="true"></span><span>Demand Finder <small>Growth Suite for buildmyapp.net</small></span></div>
+    <span class="spacer"></span>
+    <span class="listening">Listening on <b>4 sources</b>, last sweep <b><time data-t="2026-10-17T16:02:00Z">9:02 AM</time></b></span>
+    <span class="who">Signed in as Tim (Admin)</span>
+  </div>
+</header>
+
+<div class="navband">
+  <div class="wrap">
+    <nav class="stepper" aria-label="Screens">
+      <button class="step active" data-go="1" aria-current="page"><div class="step-label">Matches</div></button>
+      <button class="step" data-go="2"><div class="step-label">Approvals</div><span class="count" title="3 drafts are waiting for an Approver" aria-label="3 drafts waiting for approval">3</span></button>
+      <button class="step" data-go="3"><div class="step-label">Contacts</div></button>
+      <button class="step" data-go="4"><div class="step-label">Results</div></button>
+      <button class="step" data-go="5"><div class="step-label">Themes</div></button>
+      <button class="step" data-go="6"><div class="step-label">Settings</div></button>
+    </nav>
+  </div>
+</div>
+
+<main class="wrap">
+
+<!-- ================= SCREEN 1: MATCHES ================= -->
+<section class="screen active" data-screen="1">
+  <div class="screen-head">
+    <div>
+      <h1>Matches</h1>
+      <p>People asking, in public, for something you offer. Each one is scored for how well it fits your profile, with the reason in one sentence.</p>
+    </div>
+  </div>
+  <div class="acs"><span class="ac">AC 12 - scored matches</span><span class="ac">AC 13 - not relevant</span><span class="ac">AC 14 - draft reply or DM</span><span class="ac">AC 15 - convert to contact</span></div>
+
+  <div class="desk-bar">
+    <span class="threshold-line"><b>Showing scores 60 and up</b> <span class="thr-gauge" aria-hidden="true"></span></span>
+    <span class="muted">Change the threshold in <a href="#" data-go-settings="sources">Settings, Sources and keywords</a></span>
+    <span class="spacer"></span>
+    <span class="muted num">4 new since <time data-t="2026-10-17T07:00:00Z">12:00 AM</time> on 10/17/2026</span>
+  </div>
+
+  <div class="signals" id="signals">
+
+    <article class="signal" data-sig="1">
+      <div class="strength"><span class="score">94</span><span class="meter" aria-hidden="true" data-score="94"></span><small>score</small></div>
+      <div class="sig-body">
+        <div class="sig-meta"><span class="chip src">Hacker News</span><span class="author">kmarsh</span><span>10/17/2026, <time data-t="2026-10-17T14:41:00Z">7:41 AM</time></span><a href="#" title="Open the original post on Hacker News">news.ycombinator.com/item?id=41877102</a></div>
+        <p class="excerpt">"Ask HN: Who builds small internal tools for clinics? Our front desk runs on three spreadsheets and a whiteboard. Not looking for an enterprise system, just something our four staff can use."</p>
+        <p class="reason">Asks directly for a team to build a small internal tool, which matches your Custom internal tools offer and your Clinics and practices customer profile.</p>
+        <div class="sig-actions">
+          <button class="btn primary sm" data-draft="reply">Draft reply</button>
+          <button class="btn sm" data-draft="dm" disabled title="Hacker News has no direct messages">Draft DM</button>
+          <button class="btn sm" data-convert>Convert to contact</button>
+          <button class="btn ghost sm" data-nr>Not relevant</button>
+        </div>
+        <p class="gate-reason tiny">Draft DM is off here: Hacker News has no direct messages.</p>
+      </div>
+    </article>
+
+    <article class="signal" data-sig="2">
+      <div class="strength"><span class="score">88</span><span class="meter" aria-hidden="true" data-score="88"></span><small>score</small></div>
+      <div class="sig-body">
+        <div class="sig-meta"><span class="chip src">Bluesky</span><span class="author">@dana-ops.bsky.social</span><span>10/17/2026, <time data-t="2026-10-17T13:12:00Z">6:12 AM</time></span><a href="#" title="Open the original post on Bluesky">bsky.app/profile/dana-ops.bsky.social/post/3l6xk</a></div>
+        <p class="excerpt">"anyone know a dev shop that can build a small internal tool for our clinic? scheduling + intake forms, nothing fancy. budget is real but not agency-real"</p>
+        <p class="reason">A clinic asking for a shop to build scheduling and intake, with a modest budget: a close fit for a BuildMyApp request.</p>
+        <div class="sig-actions">
+          <button class="btn primary sm" data-draft="reply">Draft reply</button>
+          <button class="btn sm" data-draft="dm">Draft DM</button>
+          <button class="btn sm" data-convert>Convert to contact</button>
+          <button class="btn ghost sm" data-nr>Not relevant</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="signal" data-sig="3">
+      <div class="strength"><span class="score">71</span><span class="meter" aria-hidden="true" data-score="71"></span><small>score</small></div>
+      <div class="sig-body">
+        <div class="sig-meta"><span class="chip src">Google Alerts RSS</span><span class="author">Corner Bakery Co. blog</span><span>10/16/2026, <time data-t="2026-10-16T22:30:00Z">3:30 PM</time></span><a href="#" title="Open the original post">cornerbakeryco.com/blog/booking-app-quotes</a></div>
+        <p class="excerpt">"We got quoted $80,000 for a booking app. For a bakery. There has to be a way to get something simple built without hiring an agency for six months."</p>
+        <p class="reason">A small business pricing out a simple custom app and rejecting agency cost, which is the gap BuildMyApp is built for; a blog post, so no direct reply route.</p>
+        <div class="sig-actions">
+          <button class="btn primary sm" data-draft="reply">Draft reply</button>
+          <button class="btn sm" data-draft="dm" disabled title="No direct message route for a blog post">Draft DM</button>
+          <button class="btn sm" data-convert>Convert to contact</button>
+          <button class="btn ghost sm" data-nr>Not relevant</button>
+        </div>
+        <p class="gate-reason tiny">Draft DM is off here: a blog post has no direct message route. Draft reply writes a comment for you to post.</p>
+      </div>
+    </article>
+
+    <article class="signal" data-sig="4">
+      <div class="strength"><span class="score">64</span><span class="meter" aria-hidden="true" data-score="64"></span><small>score</small></div>
+      <div class="sig-body">
+        <div class="sig-meta"><span class="chip src">Forum RSS: Shop Owners Forum</span><span class="author">harbor_vet_mike</span><span>10/16/2026, <time data-t="2026-10-16T18:05:00Z">11:05 AM</time></span><a href="#" title="Open the original thread">shopownersforum.net/t/airtable-to-app/22814</a></div>
+        <p class="excerpt">"Looking for someone to turn our Airtable base into a proper app with logins for the techs. Has anyone done this and who did you use?"</p>
+        <p class="reason">Wants an existing Airtable workflow rebuilt as an app with staff logins; matches the offer, though it may suit a freelancer more than a team.</p>
+        <div class="sig-actions">
+          <button class="btn primary sm" data-draft="reply">Draft reply</button>
+          <button class="btn sm" data-draft="dm">Draft DM</button>
+          <button class="btn sm" data-convert>Convert to contact</button>
+          <button class="btn ghost sm" data-nr>Not relevant</button>
+        </div>
+      </div>
+    </article>
+
+    <div class="below">
+      <span>3 matches scored under 60 today and are not shown.</span>
+      <button class="btn sm" id="showBelow">Show them</button>
+    </div>
+  </div>
+
+  <template id="nrTpl">
+    <div class="nr-box">
+      <label class="lbl" for="nrReason">Why is this not relevant? <span class="opt">(optional, helps tune your keywords)</span></label>
+      <div class="row">
+        <select class="inp nr-reason" id="nrReason" style="flex:1 1 200px">
+          <option value="">No reason</option>
+          <option>Selling, not buying</option>
+          <option>Wrong kind of business</option>
+          <option>Already has a developer</option>
+          <option>Job posting, not a project</option>
+        </select>
+        <button class="btn sm" data-nr-confirm>Mark not relevant</button>
+        <button class="btn ghost sm" data-nr-cancel>Keep it</button>
+      </div>
+    </div>
+  </template>
+</section>
+
+<!-- ================= SCREEN 2: APPROVAL QUEUE ================= -->
+<section class="screen" data-screen="2">
+  <div class="screen-head">
+    <div>
+      <h1>Approval queue</h1>
+      <p>Every draft from every tool waits here for a person. Nothing is sent or posted until an Approver approves it.</p>
+    </div>
+    <div>
+      <div class="viewas" role="group" aria-label="Preview this screen as a role (mockup only)">
+        <button aria-pressed="true" data-role="approver">Approver view</button>
+        <button aria-pressed="false" data-role="contributor">Contributor view</button>
+      </div>
+      <p class="tiny muted" style="margin:4px 0 0">Mockup only: shows what each role sees.</p>
+    </div>
+  </div>
+  <div class="acs"><span class="ac">AC 4 - one queue, filters, batch approve</span><span class="ac">AC 2 - roles</span><span class="ac">AC 14 - facts used, disclosure</span><span class="ac">AC 16 - copy, open, mark sent</span><span class="ac">AC 17 - email limits</span><span class="ac">AC 18 - suppression</span></div>
+
+  <div class="contrib-note"><b>You are a Contributor.</b> You can write and edit drafts. Approve and Batch approve are off for Contributors: only an Approver or Admin can approve, so a second person checks every message before it goes out.</div>
+
+  <div class="filters">
+    <div><label for="fTool">Tool</label><select class="inp" id="fTool"><option>All tools</option><option>Demand Finder</option></select></div>
+    <div><label for="fCamp">Campaign</label><select class="inp" id="fCamp"><option>All campaigns</option><option>Clinics Q4</option><option>Small shops, booking apps</option></select></div>
+    <div><label for="fChan">Channel</label><select class="inp" id="fChan"><option>All channels</option><option>Email</option><option>Bluesky</option><option>Hacker News</option><option>Forum</option></select></div>
+    <div><label for="fAssn">Assignee</label><select class="inp" id="fAssn"><option>Anyone</option><option>Tim</option><option>Jordan</option></select></div>
+  </div>
+
+  <div class="batchbar">
+    <label class="check"><input type="checkbox" id="selAll"> <span>Select all awaiting approval</span></label>
+    <span class="spacer"></span>
+    <span class="small muted num" id="selCount">0 selected</span>
+    <div>
+      <button class="btn approve" id="batchApprove" disabled>Batch approve</button>
+      <p class="gate-reason" id="batchReason">Tick one or more drafts to approve them together.</p>
+    </div>
+  </div>
+
+  <div class="drafts">
+
+    <!-- Bluesky reply, awaiting approval -->
+    <article class="draft awaiting" data-draftcard>
+      <div class="draft-h">
+        <input type="checkbox" class="pick" aria-label="Select the Bluesky reply to @dana-ops for batch approval">
+        <span class="chip st-await">Awaiting approval</span>
+        <span class="to">Reply to @dana-ops.bsky.social</span>
+        <span class="chip src">Bluesky</span>
+        <span class="small muted">Demand Finder, Clinics Q4, assigned to Tim</span>
+      </div>
+      <div class="draft-b">
+        <div>
+          <div class="msg" data-msg>We build exactly this kind of thing at BuildMyApp. A clinic posts what it needs (here: scheduling and intake forms), our dev team scopes it and gives a fixed price before any work starts. Small internal tools are most of what we do.
+
+If you want a rough idea first, the request form takes about ten minutes: buildmyapp.net/request</div>
+          <p class="disclosure">Disclosure added to every post: <b>"I work with BuildMyApp."</b></p>
+          <p class="tiny muted" style="margin:6px 0 0">Bluesky self-promotion rule: disclose and link once. Set per source in Settings.</p>
+        </div>
+        <div class="facts">
+          <h4>Facts used</h4>
+          <ul>
+            <li><span>Dev team scopes and quotes a fixed price before work starts</span><span class="from-tag">Profile: offers</span></li>
+            <li><span>Small internal tools are the main offer</span><span class="from-tag">Profile: offers</span></li>
+            <li><span>Needs scheduling and intake forms</span><span class="from-tag">Post</span></li>
+            <li><span>Budget is modest ("not agency-real")</span><span class="from-tag">Post</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="draft-f">
+        <button class="btn approve needs-approver" data-approve>Approve</button>
+        <button class="btn" data-edit>Edit</button>
+        <button class="btn danger-ghost" data-discard>Discard</button>
+        <span class="small muted">Bluesky posts are never sent for you. After approval you copy the text and post it yourself.</span>
+      </div>
+    </article>
+
+    <!-- Email, awaiting approval -->
+    <article class="draft awaiting" data-draftcard>
+      <div class="draft-h">
+        <input type="checkbox" class="pick" aria-label="Select the email to Priya Nair for batch approval">
+        <span class="chip st-await">Awaiting approval</span>
+        <span class="to">Email to Priya Nair</span>
+        <span class="chip src">Email</span>
+        <span class="small muted">Demand Finder, Clinics Q4, assigned to Jordan</span>
+      </div>
+      <div class="draft-b">
+        <div>
+          <p class="small" style="margin:0 0 6px"><b>Subject:</b> Your Hacker News question about a clinic front-desk tool</p>
+          <div class="msg" data-msg>Hi Priya,
+
+I saw your Ask HN post about the front desk running on three spreadsheets and a whiteboard. That is the kind of small internal tool our team builds at BuildMyApp: you describe what the four of you need, we scope it and send a fixed price before anything starts.
+
+If it would help, I can send two examples of clinic tools we have built. No obligation either way.
+
+Tim Gray
+BuildMyApp</div>
+          <p class="disclosure">Sent as <b>Tim Gray, BuildMyApp</b>. The footer below is added to every email.</p>
+          <div class="footer-preview">BuildMyApp, 1234 Example Avenue, Suite 100, Sacramento, CA 95814.<br>You are receiving this because you asked publicly about building a clinic tool. <u>Unsubscribe</u> and we will not email you again.</div>
+        </div>
+        <div>
+          <div class="facts" style="margin-bottom:14px">
+            <h4>Facts used</h4>
+            <ul>
+              <li><span>Front desk uses three spreadsheets and a whiteboard</span><span class="from-tag">Post</span></li>
+              <li><span>Four staff will use it</span><span class="from-tag">Post</span></li>
+              <li><span>Fixed price before work starts</span><span class="from-tag">Profile: offers</span></li>
+            </ul>
+          </div>
+          <div class="meta-list">
+            <h4>Sending</h4>
+            <dl>
+              <dt>From</dt><dd>tim@mail.buildmyapp.net</dd>
+              <dt>Today</dt><dd class="num">12 of 30 sent<div class="capbar"><i style="width:40%"></i></div></dd>
+              <dt>Window</dt><dd>9:00 AM to 5:00 PM, Pacific Time</dd>
+              <dt>Goes out</dt><dd>Within the window, after approval</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div class="draft-f">
+        <button class="btn approve needs-approver" data-approve>Approve</button>
+        <button class="btn" data-edit>Edit</button>
+        <button class="btn danger-ghost" data-discard>Discard</button>
+      </div>
+    </article>
+
+    <!-- Forum DM awaiting -->
+    <article class="draft awaiting" data-draftcard>
+      <div class="draft-h">
+        <input type="checkbox" class="pick" aria-label="Select the forum message to harbor_vet_mike for batch approval">
+        <span class="chip st-await">Awaiting approval</span>
+        <span class="to">Forum reply to harbor_vet_mike</span>
+        <span class="chip src">Shop Owners Forum</span>
+        <span class="small muted">Demand Finder, Small shops, booking apps, assigned to Jordan</span>
+      </div>
+      <div class="draft-b">
+        <div>
+          <div class="msg" data-msg>We have moved a few Airtable bases into proper apps with staff logins. The usual path is to keep your Airtable data as it is, build the app on top, then switch over once the techs are happy with it. Happy to share how we would approach yours if you post the main tables.</div>
+          <p class="disclosure">Disclosure added to every post: <b>"I work with BuildMyApp."</b></p>
+          <p class="tiny muted" style="margin:6px 0 0">Shop Owners Forum rule: no links in replies. This draft has none.</p>
+        </div>
+        <div class="facts">
+          <h4>Facts used</h4>
+          <ul>
+            <li><span>Uses Airtable today</span><span class="from-tag">Post</span></li>
+            <li><span>Needs logins for techs</span><span class="from-tag">Post</span></li>
+            <li><span>Migration approach: build on existing data</span><span class="from-tag">Profile: angles</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="draft-f">
+        <button class="btn approve needs-approver" data-approve>Approve</button>
+        <button class="btn" data-edit>Edit</button>
+        <button class="btn danger-ghost" data-discard>Discard</button>
+      </div>
+    </article>
+
+    <!-- Approved HN, no-send -->
+    <article class="draft ready">
+      <div class="draft-h">
+        <span class="chip st-approved">Approved, ready to post</span>
+        <span class="to">Reply to kmarsh</span>
+        <span class="chip src">Hacker News</span>
+        <span class="approved-by">Approved by Tim at <time data-t="2026-10-17T15:20:00Z">8:20 AM</time> on 10/17/2026</span>
+      </div>
+      <div class="draft-b">
+        <div>
+          <div class="msg" id="hnText">I work with BuildMyApp, so take this with that in mind: this is the size of project we do most. Front-desk scheduling plus a shared task list for a four-person clinic is usually a few weeks of work, and you get a fixed price before anything starts. Happy to answer questions here either way.</div>
+          <p class="tiny muted" style="margin:6px 0 0">Hacker News is a no-send platform: Demand Finder never posts for you.</p>
+        </div>
+        <div class="facts">
+          <h4>Facts used</h4>
+          <ul>
+            <li><span>Four staff, front desk</span><span class="from-tag">Post</span></li>
+            <li><span>Fixed price before work starts</span><span class="from-tag">Profile: offers</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="draft-f">
+        <button class="btn primary" id="copyHn">Copy text</button>
+        <a class="btn" href="#" title="Opens the Hacker News thread in a new tab">Open post</a>
+        <button class="btn" id="markSent">Mark sent</button>
+        <span class="small muted" id="sentNote">Post it on Hacker News, then mark it sent so the contact's timeline is right.</span>
+      </div>
+    </article>
+
+    <!-- Suppressed -->
+    <article class="draft refused">
+      <div class="draft-h">
+        <span class="chip st-bounced">Not sendable</span>
+        <span class="to">Email to jo@harborvetclinic.com</span>
+        <span class="chip src">Email</span>
+      </div>
+      <div class="draft-b" style="grid-template-columns:minmax(0,1fr)">
+        <p class="refusal"><b>Refused: this address is on your suppression list.</b> Jo unsubscribed on 09/30/2026 from an earlier email. Demand Finder will not send to this address again, from any campaign.</p>
+      </div>
+      <div class="draft-f">
+        <button class="btn danger-ghost" data-discard>Discard</button>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ================= SCREEN 3: CONTACTS ================= -->
+<section class="screen" data-screen="3">
+  <div class="screen-head">
+    <div>
+      <h1>Contacts</h1>
+      <p>Everyone you have converted from a match or imported, with where they stand and every message and event in one timeline.</p>
+    </div>
+    <div class="row">
+      <button class="btn" id="openImport">Import CSV</button>
+      <button class="btn" id="openAdd">Add contact</button>
+      <button class="btn" id="exportContacts">Export CSV</button>
+    </div>
+  </div>
+  <div class="acs"><span class="ac">AC 3 - contacts, import, export</span><span class="ac">AC 5 - tracked links</span><span class="ac">AC 15 - original post</span><span class="ac">AC 19 - replies and bounces</span></div>
+
+  <!-- Import flow -->
+  <div class="import" id="importBox" hidden>
+    <div class="import-steps" aria-label="Import steps">
+      <span class="on" data-istep="1">1. Choose file</span><span data-istep="2">2. Match columns</span><span data-istep="3">3. Review result</span>
+    </div>
+    <div class="panel-b" data-ipanel="1">
+      <div class="dropzone" id="dz">
+        <p style="margin:0 0 8px">Drop a CSV here, or choose one. The first row should be column names.</p>
+        <button class="btn" id="pickCsv">Choose a CSV file</button>
+      </div>
+      <div style="margin-top:12px">
+        <button class="btn primary" id="toMap" disabled>Next: match columns</button>
+        <p class="gate-reason" id="toMapReason">Choose a CSV file first.</p>
+      </div>
+    </div>
+    <div class="panel-b" data-ipanel="2" hidden>
+      <p class="small muted" style="margin-top:0">We guessed each column from its heading. Email is required; a row without one is rejected.</p>
+      <div class="mapgrid">
+        <span class="col">"Full Name"</span><select class="inp" aria-label="Field for column Full Name"><option>Name</option><option>Skip this column</option></select>
+        <span class="col">"E-mail"</span><select class="inp" aria-label="Field for column E-mail"><option>Email</option><option>Skip this column</option></select>
+        <span class="col">"Practice"</span><select class="inp" aria-label="Field for column Practice"><option>Company</option><option>Skip this column</option></select>
+        <span class="col">"Where we met"</span><select class="inp" aria-label="Field for column Where we met"><option>Source</option><option>Notes</option><option>Skip this column</option></select>
+        <span class="col">"Phone"</span><select class="inp" aria-label="Field for column Phone"><option>Skip this column</option><option>Notes</option></select>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn primary" id="runImport">Import 49 rows</button>
+        <button class="btn ghost" id="backToFile">Back</button>
+      </div>
+    </div>
+    <div class="panel-b" data-ipanel="3" hidden>
+      <p style="margin-top:0"><b class="num">46 contacts imported.</b> <span class="rej num">3 rows rejected</span>, listed below. Nothing else changed.</p>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Row</th><th>Value</th><th>Reason</th></tr></thead>
+          <tbody>
+            <tr><td class="num">12</td><td>Dr. Alan Fisk</td><td>No email address</td></tr>
+            <tr><td class="num">19</td><td>dr.lee@</td><td>Email is not a valid address</td></tr>
+            <tr><td class="num">31</td><td>priya@lakesidephysio.com</td><td>Duplicate: already a contact (Priya Nair)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:12px"><button class="btn" id="dlRejects">Download rejected rows</button><button class="btn ghost" id="closeImport">Done</button></div>
+    </div>
+  </div>
+
+  <!-- Add contact -->
+  <div class="panel" id="addBox" hidden style="margin-bottom:16px">
+    <div class="panel-h"><h3>Add contact</h3></div>
+    <div class="panel-b">
+      <div class="grid3">
+        <div class="field req"><label class="lbl" for="acEmail">Email <span class="req-tag">Required</span></label><input class="inp" id="acEmail" type="email" placeholder="name@business.com"><p class="hint hint-empty">An email address, so we can spot duplicates.</p><p class="hint hint-invalid">That is not a complete email address.</p></div>
+        <div class="field"><label class="lbl" for="acName">Name <span class="opt">(optional)</span></label><input class="inp" id="acName" placeholder="Full name"></div>
+        <div class="field"><label class="lbl" for="acCo">Company <span class="opt">(optional)</span></label><input class="inp" id="acCo" placeholder="Business name"></div>
+      </div>
+      <button class="btn primary" id="saveContact" disabled>Save contact</button>
+      <p class="gate-reason" id="saveContactReason">Complete this to save: Email.</p>
+    </div>
+  </div>
+
+  <div class="statusfilter" aria-label="Filter by status">
+    <span class="chip st-new">new 18</span><span class="chip st-drafted">drafted 6</span><span class="chip st-approved">approved 3</span><span class="chip st-contacted">contacted 41</span><span class="chip st-replied">replied 11</span><span class="chip st-converted">converted 3</span><span class="chip st-optout">opted out 2</span><span class="chip st-bounced">bounced 1</span>
+  </div>
+
+  <div class="split">
+    <div class="panel">
+      <div class="tbl-wrap">
+        <table class="tbl contacts-tbl">
+          <thead><tr><th>Name</th><th class="hide-sm">Source</th><th>Status</th><th class="hide-sm">Last activity</th></tr></thead>
+          <tbody>
+            <tr data-pick class="sel"><td><div class="nm">Priya Nair</div><div class="tiny muted">Lakeside Physio</div></td><td class="hide-sm">Hacker News</td><td><span class="chip st-converted">converted</span></td><td class="hide-sm num">10/16/2026</td></tr>
+            <tr data-pick><td><div class="nm">Dana Ortiz</div><div class="tiny muted">Ortiz Family Clinic</div></td><td class="hide-sm">Bluesky</td><td><span class="chip st-drafted">drafted</span></td><td class="hide-sm num">10/17/2026</td></tr>
+            <tr data-pick><td><div class="nm">Marcus Webb</div><div class="tiny muted">Corner Bakery Co.</div></td><td class="hide-sm">Google Alerts RSS</td><td><span class="chip st-replied">replied</span></td><td class="hide-sm num">10/15/2026</td></tr>
+            <tr data-pick><td><div class="nm">Mike Harbor</div><div class="tiny muted">Harbor Vet</div></td><td class="hide-sm">Shop Owners Forum</td><td><span class="chip st-approved">approved</span></td><td class="hide-sm num">10/16/2026</td></tr>
+            <tr data-pick><td><div class="nm">Grace Liu</div><div class="tiny muted">Liu Dental</div></td><td class="hide-sm">CSV import</td><td><span class="chip st-contacted">contacted</span></td><td class="hide-sm num">10/14/2026</td></tr>
+            <tr data-pick><td><div class="nm">Jo Bennett</div><div class="tiny muted">Harbor Vet Clinic</div></td><td class="hide-sm">CSV import</td><td><span class="chip st-optout">opted out</span></td><td class="hide-sm num">09/30/2026</td></tr>
+            <tr data-pick><td><div class="nm">Sam Okafor</div><div class="tiny muted">Okafor Tutoring</div></td><td class="hide-sm">CSV import</td><td><span class="chip st-bounced">bounced</span></td><td class="hide-sm num">10/12/2026</td></tr>
+            <tr data-pick><td><div class="nm">Rita Gomez</div><div class="tiny muted">Gomez Pilates</div></td><td class="hide-sm">Bluesky</td><td><span class="chip st-new">new</span></td><td class="hide-sm num">10/17/2026</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h">
+        <div><h3>Priya Nair</h3><div class="small muted">Lakeside Physio, priya@lakesidephysio.com</div></div>
+        <span class="chip st-converted">converted</span>
+      </div>
+      <div class="panel-b">
+        <p class="small" style="margin-top:0">Original post: <a href="#" title="Open the Hacker News post this contact came from">Ask HN: Who builds small internal tools for clinics?</a></p>
+        <ol class="timeline">
+          <li><div class="tl-when">10/14/2026, <time data-t="2026-10-14T16:10:00Z">9:10 AM</time></div><div class="tl-what">Matched on Hacker News, score 94. Converted to a contact by Tim.</div></li>
+          <li class="ev-human"><div class="tl-when">10/14/2026, <time data-t="2026-10-14T17:02:00Z">10:02 AM</time></div><div class="tl-what">Email drafted by Jordan; approved by Tim.</div></li>
+          <li><div class="tl-when">10/14/2026, <time data-t="2026-10-14T17:15:00Z">10:15 AM</time></div><div class="tl-what">Email sent from tim@mail.buildmyapp.net.</div></li>
+          <li><div class="tl-when">10/14/2026, <time data-t="2026-10-14T20:48:00Z">1:48 PM</time></div><div class="tl-what">Clicked the tracked link in the email.</div><span class="tl-link">buildmyapp.net/r/k7Qp2 (Priya Nair, Email, Clinics Q4)</span></li>
+          <li class="ev-reply"><div class="tl-when">10/15/2026, <time data-t="2026-10-15T15:31:00Z">8:31 AM</time></div><div class="tl-what">Replied: "Yes please send the examples, we are a 4-person practice."</div></li>
+          <li class="ev-reply"><div class="tl-when">10/16/2026, <time data-t="2026-10-16T19:05:00Z">12:05 PM</time></div><div class="tl-what">Signed up on buildmyapp.net (from the tracked link). Status changed to converted.</div></li>
+        </ol>
+        <p class="tiny muted" style="margin:0">A bounce shows here the same way, and sets the status to bounced. See Sam Okafor.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SCREEN 4: RESULTS ================= -->
+<section class="screen" data-screen="4">
+  <div class="screen-head">
+    <div>
+      <h1>Results</h1>
+      <p>What the listening turned into: who you reached, who answered, who signed up. Changes compare with the period before.</p>
+    </div>
+  </div>
+  <div class="acs"><span class="ac">AC 6 - results dashboard</span><span class="ac">AC 13 - noisy keywords and sources</span></div>
+
+  <div class="resfilters">
+    <div class="wide"><label for="rFrom">From</label><input class="inp num" id="rFrom" value="09/18/2026" inputmode="numeric" placeholder="MM/DD/YYYY"></div>
+    <div class="wide"><label for="rTo">To</label><input class="inp num" id="rTo" value="10/17/2026" inputmode="numeric" placeholder="MM/DD/YYYY"></div>
+    <div><label for="rSrc">Source</label><select class="inp" id="rSrc"><option>All sources</option><option>Hacker News</option><option>Bluesky</option><option>Google Alerts RSS</option><option>Shop Owners Forum</option></select></div>
+    <div><label for="rChan">Channel</label><select class="inp" id="rChan"><option>All channels</option><option>Email</option><option>Bluesky</option><option>Hacker News</option><option>Forum</option></select></div>
+    <div><label for="rCamp">Campaign</label><select class="inp" id="rCamp"><option>All campaigns</option><option>Clinics Q4</option><option>Small shops, booking apps</option></select></div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="k-label">Matches found</div><div class="k-val">312</div><div class="k-delta pos">+48</div></div>
+    <div class="kpi"><div class="k-label">Contacts reached</div><div class="k-val">64</div><div class="k-delta pos">+19</div></div>
+    <div class="kpi"><div class="k-label">Replies</div><div class="k-val">11</div><div class="k-delta pos">+3</div></div>
+    <div class="kpi"><div class="k-label">Reply rate</div><div class="k-val">17.2%</div><div class="k-delta neg">-0.6 pts</div></div>
+    <div class="kpi"><div class="k-label">Signups</div><div class="k-val">3</div><div class="k-delta pos">+2</div></div>
+    <div class="kpi"><div class="k-label">Signup rate</div><div class="k-val">4.7%</div><div class="k-delta pos">+2.5 pts</div></div>
+  </div>
+
+  <div class="split split-res">
+    <div class="panel">
+      <div class="panel-h"><h3>Reply rate by channel</h3><span class="small muted">A best channel is named only once it has 20 or more contacts.</span></div>
+      <div class="panel-b channels">
+        <div class="chan best"><span class="cn">Email <span class="best-flag">Best channel</span></span><span class="bar" aria-hidden="true"><i style="width:66%"></i></span><span class="cv"><b>21.1%</b> of 38</span></div>
+        <div class="chan"><span class="cn">Bluesky</span><span class="nodata">Not enough data yet: 19 of 20 contacts</span><span class="cv">15.8% of 19</span></div>
+        <div class="chan"><span class="cn">Hacker News</span><span class="nodata">Not enough data yet: 7 of 20 contacts</span><span class="cv">0.0% of 7</span></div>
+        <div class="chan"><span class="cn">Forum</span><span class="nodata">Not enough data yet: 0 of 20 contacts</span><span class="cv">None yet</span></div>
+      </div>
+    </div>
+    <div class="panel noisy">
+      <div class="panel-h"><h3>Most marked not relevant</h3></div>
+      <div class="panel-b">
+        <p class="small muted" style="margin-top:0">Keywords and sources behind the matches you dismissed most. Consider narrowing or removing them in Settings.</p>
+        <ul>
+          <li><span>Keyword "app builder"<br><span class="tiny muted">Mostly no-code tools advertising themselves</span></span><b class="num">41</b></li>
+          <li><span>Source: Google Alerts, "custom software"<br><span class="tiny muted">Mostly agency press releases</span></span><b class="num">22</b></li>
+          <li><span>Keyword "MVP"<br><span class="tiny muted">Mostly funded startups hiring in-house</span></span><b class="num">17</b></li>
+          <li><span>Keyword "need a developer"<br><span class="tiny muted">Mostly job postings</span></span><b class="num">9</b></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SCREEN 5: THEMES ================= -->
+<section class="screen" data-screen="5">
+  <div class="screen-head">
+    <div>
+      <h1>Themes</h1>
+      <p>What people keep asking for, grouped each Monday from the week's matches. Use it to shape offers and posts.</p>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="genNow">Generate now</button>
+      <button class="btn" id="exportThemes">Export CSV</button>
+    </div>
+  </div>
+  <div class="acs"><span class="ac">AC 20 - weekly themes, generate now, export</span></div>
+  <p class="small muted" id="themeStamp" style="margin-top:-6px">Week of 10/12/2026 to 10/18/2026. Generated Monday 10/12/2026 at <time data-t="2026-10-12T14:00:00Z">7:00 AM</time>; the next run is Monday 10/19/2026.</p>
+
+  <div class="themes">
+    <div class="theme">
+      <div class="cnt"><b>23</b><span class="small muted">matches</span></div>
+      <h3>Clinics outgrowing spreadsheets</h3>
+      <blockquote>"Our front desk runs on three spreadsheets and a whiteboard."</blockquote>
+      <span class="tsrc">Example from Hacker News, kmarsh, 10/17/2026</span>
+    </div>
+    <div class="theme">
+      <div class="cnt"><b>17</b><span class="small muted">matches</span></div>
+      <h3>Agency quotes too high for a simple app</h3>
+      <blockquote>"We got quoted $80,000 for a booking app. For a bakery."</blockquote>
+      <span class="tsrc">Example from Google Alerts RSS, Corner Bakery Co. blog, 10/16/2026</span>
+    </div>
+    <div class="theme">
+      <div class="cnt"><b>12</b><span class="small muted">matches</span></div>
+      <h3>Airtable or Notion to a real app</h3>
+      <blockquote>"Looking for someone to turn our Airtable base into a proper app with logins for the techs."</blockquote>
+      <span class="tsrc">Example from Shop Owners Forum, harbor_vet_mike, 10/16/2026</span>
+    </div>
+    <div class="theme">
+      <div class="cnt"><b>9</b><span class="small muted">matches</span></div>
+      <h3>Booking and intake forms</h3>
+      <blockquote>"scheduling + intake forms, nothing fancy"</blockquote>
+      <span class="tsrc">Example from Bluesky, @dana-ops.bsky.social, 10/17/2026</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SCREEN 6: SETTINGS ================= -->
+<section class="screen" data-screen="6">
+  <div class="screen-head">
+    <div>
+      <h1>Settings</h1>
+      <p>Everything this instance knows about your business and how it may reach people. One Save at the bottom saves every card.</p>
+    </div>
+  </div>
+  <div class="acs"><span class="ac">AC 1 - profile</span><span class="ac">AC 2 - team</span><span class="ac">AC 5 - signup tracking</span><span class="ac">AC 7 - tools</span><span class="ac">AC 8 - AI provider</span><span class="ac">AC 9 - notifications</span><span class="ac">AC 10 - account</span><span class="ac">AC 11 - sources</span><span class="ac">AC 14 - self-promotion rules</span><span class="ac">AC 17 - email</span><span class="ac">AC 18 - suppression</span><span class="ac">AC 19 - inbound replies</span></div>
+
+  <div class="settings-layout">
+    <nav class="settings-toc" aria-label="Settings sections">
+      <a href="#set-profile">Business profile</a>
+      <a href="#set-sources">Sources and keywords</a>
+      <a href="#set-email">Email sending</a>
+      <a href="#set-ai">AI provider</a>
+      <a href="#set-team">Team</a>
+      <a href="#set-tools">Tools</a>
+      <a href="#set-notify">Notifications</a>
+      <a href="#set-signup">Signup tracking</a>
+      <a href="#set-account">Account</a>
+    </nav>
+
+    <form class="cards" id="settingsForm" onsubmit="return false">
+
+      <!-- Business profile -->
+      <div class="panel card" id="set-profile">
+        <div class="panel-h"><h2>Business profile</h2><span class="ac">AC 1</span></div>
+        <div class="panel-b">
+          <div class="grid2">
+            <div class="field req"><label class="lbl" for="bpName">Business name <span class="req-tag">Required</span></label><input class="inp" id="bpName" value="BuildMyApp" placeholder="Your business name"><p class="hint hint-empty">The name used in replies and emails.</p></div>
+            <div class="field req"><label class="lbl" for="bpSite">Website <span class="req-tag">Required</span></label><div class="row"><input class="inp" id="bpSite" value="https://buildmyapp.net" placeholder="https://yourbusiness.com"><button class="btn" type="button" id="suggest">Suggest from website</button></div><p class="hint hint-empty">Your site's address, starting with https://</p><p class="hint hint-invalid">Start the address with https://</p></div>
+          </div>
+          <div class="field"><label class="lbl" for="bpOffers">Offers <span class="opt">(one per line)</span></label><textarea class="inp" id="bpOffers">Custom internal tools for small businesses, fixed price
+Customer-facing apps (booking, intake, portals)
+Moving a spreadsheet or Airtable workflow into a real app</textarea></div>
+          <div class="field"><label class="lbl" for="bpIcp">Customer profiles <span class="opt">(one per line)</span></label><textarea class="inp" id="bpIcp">Clinics and practices with 2 to 20 staff
+Owner-run shops priced out by agencies</textarea></div>
+          <div id="suggestBox" class="suggest" hidden>
+            <h4>Suggested from buildmyapp.net: edit anything, then Save changes to keep it</h4>
+            <div class="field"><label class="lbl" for="sgIcp">Suggested customer profile</label><input class="inp" id="sgIcp" value="Service businesses with 5 to 50 staff running operations on spreadsheets"></div>
+            <p class="small" style="margin:0 0 6px"><b>Angles for "Custom internal tools for small businesses, fixed price"</b></p>
+            <div class="field"><input class="inp" aria-label="Angle 1" value="A fixed price before any work starts, so no open-ended agency bill"></div>
+            <div class="field"><input class="inp" aria-label="Angle 2" value="Built for the four people who use it, not for an enterprise"></div>
+            <div class="field"><input class="inp" aria-label="Angle 3" value="Keep your existing data; the app sits on top of it"></div>
+            <p class="tiny muted" style="margin:0">Three angles are suggested for each offer; the other two offers are collapsed here.</p>
+          </div>
+          <div class="grid2" style="margin-top:14px">
+            <div class="field"><label class="lbl" for="bpUse">Brand voice: phrases to use</label><textarea class="inp" id="bpUse">fixed price
+our dev team
+small tools, built properly</textarea></div>
+            <div class="field"><label class="lbl" for="bpAvoid">Brand voice: phrases to avoid</label><textarea class="inp" id="bpAvoid">revolutionary
+game-changer
+AI-powered</textarea></div>
+          </div>
+          <div class="grid2">
+            <div class="field req"><label class="lbl" for="bpSender">Sender name <span class="req-tag">Required</span></label><input class="inp" id="bpSender" value="Tim Gray, BuildMyApp" placeholder="Name people see on emails"><p class="hint hint-empty">The name people see on emails and in sign-offs.</p></div>
+            <div class="field req"><label class="lbl" for="bpAddr">Postal address <span class="req-tag">Required</span></label><input class="inp" id="bpAddr" value="1234 Example Avenue, Suite 100, Sacramento, CA 95814" placeholder="Street, city, state, ZIP"><p class="hint hint-empty">Needed before any email is sent: it goes in every email footer, as the law requires.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sources and keywords -->
+      <div class="panel card" id="set-sources">
+        <div class="panel-h"><h2>Sources and keywords</h2><span class="ac">AC 11, AC 14</span></div>
+        <div class="panel-b">
+          <div class="grid3">
+            <div class="field"><label class="lbl" for="sched">Check sources</label><select class="inp" id="sched"><option selected>Every hour</option><option>Every 4 hours</option><option>Once a day</option></select></div>
+            <div class="field"><label class="lbl" for="thr">Score threshold (0 to 100)</label><input class="inp num" id="thr" value="60" inputmode="numeric"><p class="hint">Matches below this are hidden, not deleted.</p></div>
+          </div>
+
+          <p class="sub">Sources</p>
+          <div class="srcrow">
+            <label class="switch" title="Hacker News on or off"><input type="checkbox" checked aria-label="Hacker News"><span></span></label>
+            <div><h4>Hacker News</h4><p class="small muted" style="margin:0">Built in. Searches new posts and comments.</p></div>
+            <div><label class="lbl tiny" for="sp-hn">Self-promotion rule</label><select class="inp" id="sp-hn"><option selected>Disclose, reply only when asked</option><option>Disclose and link once</option><option>Disclose, no links</option></select></div>
+          </div>
+          <div class="srcrow">
+            <label class="switch" title="Bluesky on or off"><input type="checkbox" checked aria-label="Bluesky"><span></span></label>
+            <div>
+              <h4>Bluesky</h4><p class="small muted" style="margin:0 0 8px">Built in. Searches public posts; no sign-in needed today.</p>
+              <label class="check small"><input type="checkbox" id="bskySignin"> <span>Sign in to Bluesky <span class="muted">(optional, off: only if Bluesky later requires sign-in for search)</span></span></label>
+              <div class="field" style="margin:8px 0 0">
+                <label class="lbl" for="bskyPw">Bluesky app password <span class="opt">(optional)</span></label>
+                <div class="row"><input class="inp" id="bskyPw" type="password" placeholder="xxxx-xxxx-xxxx-xxxx" disabled autocomplete="off"><button type="button" class="btn sm reveal" data-reveal="bskyPw" data-what="Bluesky app password" aria-label="Show the Bluesky app password" title="Show the Bluesky app password" disabled>Show</button></div>
+                <p class="hint" id="bskyHint">Turn on "Sign in to Bluesky" to enter one.</p>
+              </div>
+            </div>
+            <div><label class="lbl tiny" for="sp-bs">Self-promotion rule</label><select class="inp" id="sp-bs"><option>Disclose, reply only when asked</option><option selected>Disclose and link once</option><option>Disclose, no links</option></select></div>
+          </div>
+          <div class="srcrow">
+            <label class="switch" title="RSS and Atom feeds on or off"><input type="checkbox" checked aria-label="RSS and Atom feeds"><span></span></label>
+            <div>
+              <h4>RSS and Atom feeds</h4>
+              <ul class="small" style="margin:4px 0 8px;padding-left:18px">
+                <li>Google Alerts: "custom software" <span class="muted">(google.com/alerts/feeds/...)</span></li>
+                <li>Google Alerts: "booking app" quote</li>
+                <li>Shop Owners Forum, new threads <span class="muted">(shopownersforum.net/latest.rss)</span></li>
+              </ul>
+              <div class="field" style="margin:0">
+                <div class="row"><input class="inp" id="feedUrl" placeholder="Feed address, https://..." aria-label="New feed address"><button type="button" class="btn sm" id="addFeed" disabled>Add feed</button></div>
+                <p class="gate-reason" id="addFeedReason">Paste a feed address starting with https:// to add it.</p>
+              </div>
+            </div>
+            <div><label class="lbl tiny" for="sp-rss">Self-promotion rule</label><select class="inp" id="sp-rss"><option>Disclose, reply only when asked</option><option>Disclose and link once</option><option selected>Disclose, no links</option></select></div>
+          </div>
+          <div class="srcrow">
+            <label class="switch" title="Reddit is off until your own Reddit API credentials are entered"><input type="checkbox" id="redditOn" disabled aria-label="Reddit"><span></span></label>
+            <div>
+              <h4>Reddit <span class="chip st-new">Off</span></h4>
+              <p class="small muted" style="margin:0 0 8px">Needs your own Reddit API credentials (Reddit requires each user to register an app).</p>
+              <div class="grid2">
+                <div class="field"><label class="lbl" for="rdId">Reddit client ID</label><input class="inp" id="rdId" placeholder="From reddit.com/prefs/apps" autocomplete="off"></div>
+                <div class="field"><label class="lbl" for="rdSecret">Reddit client secret</label><div class="row"><input class="inp" id="rdSecret" type="password" placeholder="Paste the secret" autocomplete="off"><button type="button" class="btn sm reveal" data-reveal="rdSecret" data-what="Reddit client secret" aria-label="Show the Reddit client secret" title="Show the Reddit client secret">Show</button></div></div>
+              </div>
+              <p class="gate-reason" id="redditReason">Enter both the client ID and secret to turn Reddit on.</p>
+            </div>
+            <div><label class="lbl tiny" for="sp-rd">Self-promotion rule</label><select class="inp" id="sp-rd"><option selected>Disclose, reply only when asked</option><option>Disclose and link once</option><option>Disclose, no links</option></select></div>
+          </div>
+
+          <p class="sub" style="margin-top:14px">Keywords and need phrases</p>
+          <div class="tbl-wrap">
+            <table class="tbl kwtable">
+              <thead><tr><th>Phrase</th><th>Hacker News</th><th>Bluesky</th><th>Feeds</th><th>Reddit</th></tr></thead>
+              <tbody>
+                <tr><td>"build a small internal tool"</td><td><input type="checkbox" checked aria-label="build a small internal tool on Hacker News"></td><td><input type="checkbox" checked aria-label="on Bluesky"></td><td><input type="checkbox" checked aria-label="on Feeds"></td><td><input type="checkbox" disabled aria-label="on Reddit, off"></td></tr>
+                <tr><td>"dev shop" recommend</td><td><input type="checkbox" checked aria-label="dev shop on Hacker News"></td><td><input type="checkbox" checked aria-label="on Bluesky"></td><td><input type="checkbox" aria-label="on Feeds"></td><td><input type="checkbox" disabled aria-label="on Reddit, off"></td></tr>
+                <tr><td>"turn our spreadsheet into an app"</td><td><input type="checkbox" aria-label="spreadsheet on Hacker News"></td><td><input type="checkbox" checked aria-label="on Bluesky"></td><td><input type="checkbox" checked aria-label="on Feeds"></td><td><input type="checkbox" disabled aria-label="on Reddit, off"></td></tr>
+                <tr><td>"app builder"</td><td><input type="checkbox" aria-label="app builder on Hacker News"></td><td><input type="checkbox" checked aria-label="on Bluesky"></td><td><input type="checkbox" checked aria-label="on Feeds"></td><td><input type="checkbox" disabled aria-label="on Reddit, off"></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="row" style="margin-top:10px"><input class="inp" id="kwNew" placeholder="A phrase a buyer would write" aria-label="New keyword or need phrase"><button type="button" class="btn sm" id="addKw" disabled>Add phrase</button></div>
+          <p class="gate-reason" id="addKwReason">Type a phrase to add it.</p>
+        </div>
+      </div>
+
+      <!-- Email sending -->
+      <div class="panel card" id="set-email">
+        <div class="panel-h"><h2>Email sending</h2><span class="ac">AC 17, AC 18, AC 19</span></div>
+        <div class="panel-b">
+          <p class="sub" style="margin-top:0">Provider</p>
+          <div class="row" style="margin-bottom:12px">
+            <label class="check"><input type="radio" name="prov" checked> <span>Resend</span></label>
+            <label class="check"><input type="radio" name="prov"> <span>SMTP</span></label>
+            <label class="check"><input type="radio" name="prov"> <span>Another API provider</span></label>
+          </div>
+          <div class="grid2">
+            <div class="field"><label class="lbl" for="emKey">Resend API key</label><div class="row"><input class="inp" id="emKey" type="password" value="sample-resend-key-for-mockup" autocomplete="off"><button type="button" class="btn sm reveal" data-reveal="emKey" data-what="Resend API key" aria-label="Show the Resend API key" title="Show the Resend API key">Show</button></div><p class="hint">Connected 10/02/2026. Sample value for the mockup.</p></div>
+            <div class="field"><label class="lbl" for="emFrom">From address</label><input class="inp" id="emFrom" value="tim@mail.buildmyapp.net"></div>
+          </div>
+          <div class="grid3">
+            <div class="field"><label class="lbl" for="emCap">Daily cap</label><input class="inp num" id="emCap" value="30" inputmode="numeric"><p class="hint">Emails per day, all campaigns together.</p></div>
+            <div class="field"><label class="lbl" for="emWin">Sending window</label><div class="row"><select class="inp" id="emWin" aria-label="Window start"><option>9:00 AM</option></select><span class="small">to</span><select class="inp" aria-label="Window end"><option>5:00 PM</option></select></div></div>
+            <div class="field"><label class="lbl" for="emTz">Time zone</label><select class="inp" id="emTz"><option>Pacific Time (Los Angeles)</option><option>Mountain Time</option><option>Central Time</option><option>Eastern Time</option></select></div>
+          </div>
+          <p class="sub">Domain checks for mail.buildmyapp.net</p>
+          <ul class="dns">
+            <li><b>SPF</b><span class="pass">Pass</span><span class="muted small">Resend is allowed to send for this domain.</span></li>
+            <li><b>DKIM</b><span class="pass">Pass</span><span class="muted small">Signed with key resend._domainkey.</span></li>
+            <li><b>DMARC</b><span class="fail">Fail</span><span class="small"><b>No DMARC record found.</b> At your DNS host, add a TXT record named <code>_dmarc.mail.buildmyapp.net</code> with the value <code>v=DMARC1; p=none; rua=mailto:dmarc@buildmyapp.net</code>, then check again.</span></li>
+          </ul>
+          <button type="button" class="btn sm" id="recheck" style="margin-top:8px">Check again</button>
+
+          <p class="sub" style="margin-top:18px">Suppression list</p>
+          <p class="small muted" style="margin-top:0">Addresses that must never be emailed. Unsubscribes and bounces are added automatically; 37 on the list now.</p>
+          <div class="row"><button type="button" class="btn sm" id="pickSupp">Choose a CSV of addresses</button><span class="small muted" id="suppFile">No file chosen</span><button type="button" class="btn sm" id="importSupp" disabled>Import list</button></div>
+          <p class="gate-reason" id="suppReason">Choose a CSV file first.</p>
+
+          <p class="sub" style="margin-top:18px">Replies</p>
+          <label class="check" style="margin-bottom:6px"><input type="radio" name="inb" checked> <span>Send replies to <code>replies@in.buildmyapp.net</code> (set as Reply-To on every email)</span></label>
+          <label class="check"><input type="radio" name="inb"> <span>Use Resend's inbound webhook: <code>https://finder.buildmyapp.net/hooks/inbound/resend</code></span></label>
+          <p class="hint">Replies and bounces land on the contact's timeline and update their status.</p>
+        </div>
+      </div>
+
+      <!-- AI provider -->
+      <div class="panel card" id="set-ai">
+        <div class="panel-h"><h2>AI provider</h2><span class="ac">AC 8</span></div>
+        <div class="panel-b">
+          <div class="row" style="margin-bottom:12px">
+            <label class="check"><input type="radio" name="keymode" value="own" checked> <span>Use my own key</span></label>
+            <label class="check"><input type="radio" name="keymode" value="bma"> <span>Use BMA's capped key on my plan</span></label>
+          </div>
+          <div id="ownKey">
+            <div class="grid2">
+              <div class="field"><label class="lbl" for="aiProv">Provider</label><select class="inp" id="aiProv"><option>Claude (Anthropic)</option><option>OpenAI</option></select></div>
+              <div class="field"><label class="lbl" for="aiKey">API key</label><div class="row"><input class="inp" id="aiKey" type="password" value="sample-key-for-mockup-0000" autocomplete="off"><button type="button" class="btn sm reveal" data-reveal="aiKey" data-what="AI provider API key" aria-label="Show the AI provider API key" title="Show the AI provider API key">Show</button></div></div>
+            </div>
+          </div>
+          <div class="note" id="bmaKey" hidden>This instance uses BMA's capped key on your plan: cap set by BMA. Ask BMA for a higher cap, or switch to your own key.</div>
+          <p class="sub" style="margin-top:14px">This month's usage, 10/01/2026 to today</p>
+          <div class="usage"><span>Demand Finder</span><span class="capbar"><i style="width:32%"></i></span><span class="num small">$6.40 of $20.00</span></div>
+          <p class="hint">At the cap, scoring and drafting pause until next month or until the cap is raised; matches keep arriving.</p>
+        </div>
+      </div>
+
+      <!-- Team -->
+      <div class="panel card" id="set-team">
+        <div class="panel-h"><h2>Team</h2><span class="ac">AC 2</span></div>
+        <div class="panel-b">
+          <ul class="roles">
+            <li><b>Admin:</b> everything, including settings, keys and the team.</li>
+            <li><b>Approver:</b> approves drafts for sending or posting, and can write them.</li>
+            <li><b>Contributor:</b> writes and edits drafts; cannot approve.</li>
+          </ul>
+          <div class="row">
+            <input class="inp" id="invEmail" type="email" placeholder="Email address to invite" aria-label="Email address to invite">
+            <select class="inp" id="invRole" aria-label="Role" style="flex:0 1 160px"><option>Contributor</option><option>Approver</option><option>Admin</option></select>
+            <button type="button" class="btn" id="invite" disabled>Send invite</button>
+          </div>
+          <p class="gate-reason" id="inviteReason">Type an email address to invite.</p>
+          <div class="tbl-wrap" style="margin-top:12px">
+            <table class="tbl members">
+              <thead><tr><th>Person</th><th>Role</th></tr></thead>
+              <tbody>
+                <tr><td>Tim Gray <span class="tiny muted">tim@buildmyapp.net</span></td><td>Admin</td></tr>
+                <tr><td>Jordan Lee <span class="tiny muted">jordan@buildmyapp.net</span></td><td>Contributor</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="sub" style="margin-top:14px">Approval history</p>
+          <ul class="small" style="margin:0;padding-left:18px">
+            <li>Reply to kmarsh (Hacker News): approved by Tim at <time data-t="2026-10-17T15:20:00Z">8:20 AM</time> on 10/17/2026</li>
+            <li>Email to Priya Nair: approved by Tim at <time data-t="2026-10-14T17:02:00Z">10:02 AM</time> on 10/14/2026</li>
+            <li>Reply to Marcus Webb (blog comment): approved by Tim at <time data-t="2026-10-13T21:40:00Z">2:40 PM</time> on 10/13/2026</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Tools -->
+      <div class="panel card" id="set-tools">
+        <div class="panel-h"><h2>Tools</h2><span class="ac">AC 7</span></div>
+        <div class="panel-b">
+          <div class="toolrow">
+            <label class="switch" title="Turn Demand Finder on or off"><input type="checkbox" checked aria-label="Demand Finder"><span></span></label>
+            <div class="grow"><b>Demand Finder</b><div class="small muted">Finds people asking for what you offer and drafts replies for approval.</div></div>
+          </div>
+          <div class="toolrow off">
+            <label class="switch" title="Sequences is a later Growth Suite tool, not part of this build"><input type="checkbox" disabled aria-label="Sequences, later tool"><span></span></label>
+            <div class="grow"><b>Sequences</b> <span class="v2">v2</span><div class="small">A later Growth Suite tool. Not part of this build.</div></div>
+          </div>
+          <div class="toolrow off">
+            <label class="switch" title="Content studio is a later Growth Suite tool, not part of this build"><input type="checkbox" disabled aria-label="Content studio, later tool"><span></span></label>
+            <div class="grow"><b>Content studio</b> <span class="v2">v2</span><div class="small">A later Growth Suite tool. Not part of this build.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="panel card" id="set-notify">
+        <div class="panel-h"><h2>Notifications</h2><span class="ac">AC 9</span></div>
+        <div class="panel-b">
+          <label class="check" style="margin-bottom:12px"><input type="checkbox" checked> <span>Daily email digest of new matches and drafts waiting, at 8:00 AM your time</span></label>
+          <div class="field" id="slackField" style="margin:0">
+            <label class="lbl" for="slack">Slack webhook URL <span class="opt">(optional)</span></label>
+            <input class="inp" id="slack" placeholder="https://hooks.slack.com/services/...">
+            <p class="hint">Posts the same digest to a Slack channel.</p>
+            <p class="hint hint-invalid">A Slack webhook starts with https://hooks.slack.com/</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Signup tracking -->
+      <div class="panel card" id="set-signup">
+        <div class="panel-h"><h2>Signup tracking</h2><span class="ac">AC 5</span></div>
+        <div class="panel-b">
+          <p class="small" style="margin-top:0">Every link in a message is a tracked link for that contact, channel and campaign. To count a signup, have your site call this address when someone signs up, passing the tracking code from the link.</p>
+          <div class="row"><code id="hookUrl" style="flex:1 1 220px;padding:7px 9px">https://finder.buildmyapp.net/hooks/signup</code><button type="button" class="btn sm" id="copyHook">Copy address</button></div>
+          <pre>POST /hooks/signup
+Content-Type: application/json
+X-Finder-Secret: (shown once when you set it up)
+
+{
+  "ref": "k7Qp2",
+  "email": "priya@lakesidephysio.com",
+  "signed_up_at": "2026-10-16T19:05:00Z"
+}</pre>
+        </div>
+      </div>
+
+      <!-- Account -->
+      <div class="panel card" id="set-account">
+        <div class="panel-h"><h2>Account</h2><span class="ac">AC 10</span></div>
+        <div class="panel-b">
+          <p style="margin-top:0">Signed in as Tim Gray (tim@buildmyapp.net), Admin.</p>
+          <div class="row"><a class="btn" href="#" title="Opens the change password page">Change password</a><button type="button" class="btn ghost" id="signout">Sign out</button></div>
+          <p class="hint">Dates and times show in your local time zone, detected from this browser: <b id="tzName">Pacific Time</b>.</p>
+        </div>
+      </div>
+
+      <div class="savebar">
+        <div>
+          <button type="submit" class="btn primary" id="saveSettings" disabled>Save changes</button>
+          <p class="gate-reason" id="saveReason">No changes yet.</p>
+        </div>
+        <a href="#" class="small" data-go="1">Exit without saving changes</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<div class="toast" id="toast" hidden role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  var $=function(s,c){return (c||document).querySelector(s)};
+  var $$=function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
+
+  /* Screen navigation */
+  function go(n){
+    $$('.screen').forEach(function(s){s.classList.toggle('active',s.getAttribute('data-screen')===String(n))});
+    $$('.step').forEach(function(b){var on=b.getAttribute('data-go')===String(n);b.classList.toggle('active',on);if(on){b.setAttribute('aria-current','page')}else{b.removeAttribute('aria-current')}});
+    window.scrollTo(0,0);
+  }
+  window.__go=go;
+  $$('[data-go]').forEach(function(b){b.addEventListener('click',function(e){e.preventDefault();go(b.getAttribute('data-go'))})});
+  $$('[data-go-settings]').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();go(6);var t=document.getElementById('set-'+a.getAttribute('data-go-settings'));if(t)t.scrollIntoView()})});
+
+  var toastT;
+  function toast(msg){var t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},2600)}
+  function working(btn,label,done,ms){var orig=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="spin" aria-hidden="true"></span>'+label;setTimeout(function(){btn.innerHTML=orig;btn.disabled=false;done&&done(btn)},ms||900)}
+
+  /* Local times: render each time in the viewer's own clock style */
+  $$('time[data-t]').forEach(function(t){
+    var d=new Date(t.getAttribute('data-t'));
+    if(!isNaN(d)) t.textContent=d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+  });
+  try{var tz=Intl.DateTimeFormat().resolvedOptions().timeZone; if(tz) $('#tzName').textContent=tz.replace(/_/g,' ');}catch(e){}
+
+  /* Score meters */
+  $$('.meter').forEach(function(m){var s=+m.getAttribute('data-score');for(var i=1;i<=10;i++){var b=document.createElement('i');b.style.height=(6+i*1.6)+'px';if(i<=Math.round(s/10))b.className='on';m.appendChild(b)}});
+
+  /* Matches: not relevant with optional reason */
+  $$('[data-nr]').forEach(function(btn){btn.addEventListener('click',function(){
+    var body=btn.closest('.sig-body'); if(body.querySelector('.nr-box')) return;
+    var node=$('#nrTpl').content.cloneNode(true); body.appendChild(node);
+    var box=body.querySelector('.nr-box');
+    box.querySelector('[data-nr-cancel]').addEventListener('click',function(){box.remove()});
+    box.querySelector('[data-nr-confirm]').addEventListener('click',function(){
+      var r=box.querySelector('select').value; var sig=btn.closest('.signal');
+      sig.classList.add('dismissed'); box.innerHTML='<p class="small" style="margin:0">Marked not relevant'+(r?(': '+r):'')+'. It now counts toward the noisy keywords on Results.</p>';
+      $$('.sig-actions button',sig).forEach(function(b){b.disabled=true});
+    });
+  })});
+  $$('[data-draft]').forEach(function(b){b.addEventListener('click',function(){
+    working(b,'Drafting...',function(){b.textContent=b.getAttribute('data-draft')==='dm'?'DM drafted':'Reply drafted';b.disabled=true;toast('Draft added to the approval queue.')},1100);
+  })});
+  $$('[data-convert]').forEach(function(b){b.addEventListener('click',function(){
+    working(b,'Converting...',function(){b.textContent='Contact created';b.disabled=true;toast('Added to Contacts, linked to the original post.')},700);
+  })});
+  $('#showBelow').addEventListener('click',function(){toast('Mockup: the three lower-scored matches would list here.')});
+
+  /* Queue: role preview, batch select, approve, edit, discard */
+  function setRole(r){
+    document.body.classList.toggle('contributor',r==='contributor');
+    $$('.viewas button').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-role')===r?'true':'false')});
+    $$('.needs-approver').forEach(function(b){if(b.dataset.done)return;b.disabled=(r==='contributor');b.title=r==='contributor'?'Only an Approver or Admin can approve':''});
+    syncBatch();
+  }
+  $$('.viewas button').forEach(function(b){b.addEventListener('click',function(){setRole(b.getAttribute('data-role'))})});
+  function picks(){return $$('.pick').filter(function(p){return !p.disabled})}
+  function syncBatch(){
+    var n=picks().filter(function(p){return p.checked}).length, contrib=document.body.classList.contains('contributor');
+    $('#selCount').textContent=n+' selected';
+    var btn=$('#batchApprove'), why=$('#batchReason');
+    if(contrib){btn.disabled=true;why.textContent='Contributors cannot approve. Ask an Approver.';}
+    else if(n===0){btn.disabled=true;why.textContent='Tick one or more drafts to approve them together.';}
+    else{btn.disabled=false;btn.textContent='Batch approve ('+n+')';why.textContent='Approves the ticked drafts in one step.';}
+    if(n===0||contrib) btn.textContent='Batch approve';
+  }
+  $$('.pick').forEach(function(p){p.addEventListener('change',syncBatch)});
+  $('#selAll').addEventListener('change',function(){var on=this.checked;picks().forEach(function(p){p.checked=on});syncBatch()});
+  function approveCard(card){
+    var chip=$('.st-await',card); if(!chip) return;
+    chip.className='chip st-approved'; chip.textContent='Approved';
+    card.classList.remove('awaiting'); card.classList.add('ready');
+    var p=$('.pick',card); p.checked=false; p.disabled=true;
+    var a=$('[data-approve]',card); a.dataset.done='1'; a.disabled=true; a.textContent='Approved';
+    var t=new Date(); var note=document.createElement('span'); note.className='approved-by';
+    note.textContent='Approved by Tim at '+t.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+    $('.draft-h',card).appendChild(note);
+    var c=$('.step .count'); var left=$$('.st-await').length; if(c){c.textContent=left; c.hidden=left===0;}
+  }
+  $$('[data-approve]').forEach(function(b){b.addEventListener('click',function(){
+    var card=b.closest('[data-draftcard]'); working(b,'Approving...',function(){approveCard(card);syncBatch()},600);
+  })});
+  $('#batchApprove').addEventListener('click',function(){
+    var cards=picks().filter(function(p){return p.checked}).map(function(p){return p.closest('[data-draftcard]')});
+    working(this,'Approving...',function(){cards.forEach(approveCard);$('#selAll').checked=false;syncBatch();toast(cards.length+' drafts approved.')},800);
+  });
+  $$('[data-edit]').forEach(function(b){b.addEventListener('click',function(){
+    var m=$('[data-msg]',b.closest('[data-draftcard]')); var on=m.getAttribute('contenteditable')==='true';
+    m.setAttribute('contenteditable',on?'false':'true'); b.textContent=on?'Edit':'Done editing'; if(!on)m.focus();
+  })});
+  $$('[data-discard]').forEach(function(b){b.addEventListener('click',function(){
+    var card=b.closest('.draft'); card.innerHTML='<div class="draft-h"><span class="small muted">Draft discarded.</span></div>'; card.style.borderLeftColor='var(--rule)';
+    var c=$('.step .count'); var left=$$('.st-await').length; if(c){c.textContent=left;c.hidden=left===0;} syncBatch();
+  })});
+  $('#copyHn').addEventListener('click',function(){
+    var b=this; try{navigator.clipboard&&navigator.clipboard.writeText($('#hnText').textContent)}catch(e){}
+    b.textContent='Copied'; setTimeout(function(){b.textContent='Copy text'},1600);
+  });
+  $('#markSent').addEventListener('click',function(){
+    var b=this; working(b,'Saving...',function(){b.textContent='Marked sent';b.disabled=true;$('#sentNote').textContent='Logged on kmarsh\'s timeline as sent by you.'},600);
+  });
+
+  /* Contacts: import flow */
+  function istep(n){
+    $$('[data-ipanel]').forEach(function(p){p.hidden=p.getAttribute('data-ipanel')!==String(n)});
+    $$('[data-istep]').forEach(function(s){s.classList.toggle('on',s.getAttribute('data-istep')===String(n))});
+  }
+  $('#openImport').addEventListener('click',function(){$('#addBox').hidden=true;$('#importBox').hidden=false;istep(1)});
+  $('#openAdd').addEventListener('click',function(){$('#importBox').hidden=true;$('#addBox').hidden=false;$('#acEmail').focus()});
+  function setFile(on){
+    var dz=$('#dz');
+    if(on){
+      dz.classList.add('has');
+      dz.innerHTML='<b>clinic-leads-october.csv</b><div class="small muted">49 rows, 5 columns</div><button class="dz-x" id="dzx" title="Remove this file" aria-label="Remove clinic-leads-october.csv">&times;</button>';
+      $('#dzx').addEventListener('click',function(){setFile(false)});
+      $('#toMap').disabled=false; $('#toMapReason').textContent='Ready to match columns.';
+    } else {
+      dz.classList.remove('has');
+      dz.innerHTML='<p style="margin:0 0 8px">Drop a CSV here, or choose one. The first row should be column names.</p><button class="btn" id="pickCsv">Choose a CSV file</button>';
+      $('#pickCsv').addEventListener('click',function(){setFile(true)});
+      $('#toMap').disabled=true; $('#toMapReason').textContent='Choose a CSV file first.';
+    }
+  }
+  $('#pickCsv').addEventListener('click',function(){setFile(true)});
+  $('#toMap').addEventListener('click',function(){istep(2)});
+  $('#backToFile').addEventListener('click',function(){istep(1)});
+  $('#runImport').addEventListener('click',function(){working(this,'Importing...',function(){istep(3)},1000)});
+  $('#closeImport').addEventListener('click',function(){$('#importBox').hidden=true});
+  $('#dlRejects').addEventListener('click',function(){toast('Mockup: downloads the 3 rejected rows with their reasons.')});
+  $('#exportContacts').addEventListener('click',function(){working(this,'Exporting...',function(){toast('contacts.csv downloaded.')},700)});
+  function emailOk(v){return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)}
+  $('#acEmail').addEventListener('input',function(){
+    var v=this.value.trim(), f=this.closest('.field'), ok=emailOk(v);
+    f.classList.toggle('invalid',v!==''&&!ok);
+    $('#saveContact').disabled=!ok;
+    $('#saveContactReason').textContent=ok?'Ready to save.':(v===''?'Complete this to save: Email.':'Complete this to save: Email (that is not a complete email address).');
+  });
+  $('#saveContact').addEventListener('click',function(){working(this,'Saving...',function(){$('#addBox').hidden=true;toast('Contact saved with status new.')},700)});
+  $$('[data-pick]').forEach(function(r){r.addEventListener('click',function(){$$('[data-pick]').forEach(function(x){x.classList.remove('sel')});r.classList.add('sel')})});
+
+  /* Themes */
+  $('#genNow').addEventListener('click',function(){
+    working(this,'Grouping this week\'s matches...',function(){
+      var d=new Date(); $('#themeStamp').textContent='Week of 10/12/2026 to 10/18/2026. Generated just now, at '+d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})+'; the next scheduled run is Monday 10/19/2026.';
+    },1400);
+  });
+  $('#exportThemes').addEventListener('click',function(){working(this,'Exporting...',function(){toast('themes-week-10-12-2026.csv downloaded.')},700)});
+
+  /* Show / Hide on masked fields */
+  $$('[data-reveal]').forEach(function(b){b.addEventListener('click',function(){
+    var inp=document.getElementById(b.getAttribute('data-reveal')), what=b.getAttribute('data-what'), show=inp.type==='password';
+    inp.type=show?'text':'password'; b.textContent=show?'Hide':'Show'; b.setAttribute('aria-pressed',show?'true':'false');
+    var lbl=(show?'Hide the ':'Show the ')+what; b.setAttribute('aria-label',lbl); b.title=lbl;
+  })});
+
+  /* Settings gating */
+  $('#bskySignin').addEventListener('change',function(){
+    var on=this.checked; $('#bskyPw').disabled=!on; $('[data-reveal="bskyPw"]').disabled=!on;
+    $('#bskyHint').textContent=on?'Create an app password in Bluesky under Settings, Privacy and security, App passwords.':'Turn on "Sign in to Bluesky" to enter one.';
+  });
+  function redditSync(){
+    var ok=$('#rdId').value.trim()&&$('#rdSecret').value.trim(); $('#redditOn').disabled=!ok;
+    $('#redditReason').textContent=ok?'Credentials entered: you can turn Reddit on.':'Enter both the client ID and secret to turn Reddit on.';
+    if(!ok) $('#redditOn').checked=false;
+  }
+  $('#rdId').addEventListener('input',redditSync); $('#rdSecret').addEventListener('input',redditSync);
+  $('#feedUrl').addEventListener('input',function(){var ok=/^https:\/\/\S+\.\S+/.test(this.value.trim());$('#addFeed').disabled=!ok;$('#addFeedReason').textContent=ok?'Ready to add.':(this.value.trim()?'A feed address must start with https://':'Paste a feed address starting with https:// to add it.')});
+  $('#addFeed').addEventListener('click',function(){working(this,'Checking feed...',function(b){b.disabled=true;$('#feedUrl').value='';$('#addFeedReason').textContent='Feed added; it is checked on the next sweep.'},900)});
+  $('#kwNew').addEventListener('input',function(){var ok=this.value.trim().length>1;$('#addKw').disabled=!ok;$('#addKwReason').textContent=ok?'Ready to add. Tick the sources it applies to after adding.':'Type a phrase to add it.'});
+  $('#addKw').addEventListener('click',function(){working(this,'Adding...',function(b){b.disabled=true;$('#kwNew').value='';$('#addKwReason').textContent='Phrase added.'},500)});
+  $('#recheck').addEventListener('click',function(){working(this,'Checking DNS...',function(){toast('DMARC still missing. SPF and DKIM pass.')},1200)});
+  $('#pickSupp').addEventListener('click',function(){$('#suppFile').textContent='unsubscribes-export.csv (112 addresses)';$('#importSupp').disabled=false;$('#suppReason').textContent='Ready to import.'});
+  $('#importSupp').addEventListener('click',function(){working(this,'Importing...',function(b){b.disabled=true;$('#suppReason').textContent='112 addresses added; 4 were already on the list. 145 on the list now.'},900)});
+  $$('input[name="keymode"]').forEach(function(r){r.addEventListener('change',function(){var bma=$('input[name="keymode"]:checked').value==='bma';$('#ownKey').hidden=bma;$('#bmaKey').hidden=!bma})});
+  $('#invEmail').addEventListener('input',function(){var v=this.value.trim(),ok=emailOk(v);$('#invite').disabled=!ok;$('#inviteReason').textContent=ok?'Ready to send.':(v?'That is not a complete email address.':'Type an email address to invite.')});
+  $('#invite').addEventListener('click',function(){working(this,'Sending...',function(b){b.disabled=true;$('#inviteReason').textContent='Invite sent to '+$('#invEmail').value.trim()+' as '+$('#invRole').value+'.';$('#invEmail').value=''},900)});
+  $('#slack').addEventListener('input',function(){var v=this.value.trim();this.closest('.field').classList.toggle('invalid',v!==''&&v.indexOf('https://hooks.slack.com/')!==0);settingsSync()});
+  $('#copyHook').addEventListener('click',function(){var b=this;try{navigator.clipboard&&navigator.clipboard.writeText($('#hookUrl').textContent)}catch(e){}b.textContent='Copied';setTimeout(function(){b.textContent='Copy address'},1600)});
+  $('#signout').addEventListener('click',function(){working(this,'Signing out...',function(){toast('Mockup: returns to the sign-in page.')},700)});
+  $('#suggest').addEventListener('click',function(){working(this,'Reading the website...',function(){$('#suggestBox').hidden=false;dirty=true;settingsSync()},1400)});
+
+  function settingsSync(){
+    var missing=[];
+    [['bpName','Business name'],['bpSite','Website'],['bpSender','Sender name'],['bpAddr','Postal address']].forEach(function(p){if(!$('#'+p[0]).value.trim())missing.push(p[1])});
+    var site=$('#bpSite').value.trim(); var siteBad=site&&site.indexOf('https://')!==0;
+    $('#bpSite').closest('.field').classList.toggle('invalid',!!siteBad);
+    if(siteBad) missing.push('Website (start the address with https://)');
+    if($('#slackField').classList.contains('invalid')) missing.push('Slack webhook URL (must start with https://hooks.slack.com/)');
+    $('#suggest').disabled=!site||siteBad;
+    $('#saveSettings').disabled=missing.length>0||!dirty;
+    $('#saveReason').textContent=missing.length?('Complete these to save: '+missing.join(', ')+'.'):(dirty?'Saves every card on this screen.':'No changes yet.');
+  }
+  var dirty=false;
+  $('#settingsForm').addEventListener('input',function(){dirty=true;settingsSync()});
+  $('#settingsForm').addEventListener('change',function(){dirty=true;settingsSync()});
+  $('#saveSettings').addEventListener('click',function(){working(this,'Saving...',function(){dirty=false;settingsSync();toast('Saved: profile, sources, email, AI, tools and notifications.')},900)});
+  settingsSync();
+})();
+</script>
+</body>
+</html>
