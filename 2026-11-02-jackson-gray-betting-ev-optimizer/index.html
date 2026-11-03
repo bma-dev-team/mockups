@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blind Picks - mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #15243b;
+  --ink-soft: #2b3d58;
+  --paper: #eef1f4;
+  --card: #ffffff;
+  --slate: #586a7f;
+  --line: #d3dae3;
+  --seal: #e3a33a;
+  --seal-soft: #fbefd9;
+  --pos: #1e7f52;
+  --neg: #b83a34;
+  --prompt: #306cc0;
+  --prompt-soft: #e8f0fb;
+  --radius-lg: 14px;
+  --radius-sm: 6px;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "Source Sans 3", "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--paper); color: var(--ink); font: 16px/1.5 var(--body); }
+button, input, select { font: inherit; }
+:focus-visible { outline: 3px solid var(--prompt); outline-offset: 2px; }
+
+.masthead { background: var(--ink); color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { font-family: var(--display); font-weight: 700; font-size: 26px; letter-spacing: .02em; display: flex; align-items: center; gap: 10px; }
+.brand .eye { width: 26px; height: 16px; border-radius: 50%; border: 3px solid var(--seal); position: relative; }
+.brand .eye::after { content: ""; position: absolute; left: -4px; right: -4px; top: 50%; height: 3px; background: var(--seal); transform: rotate(-20deg); }
+.who { font-size: 14px; color: #c8d3e2; }
+.who strong { color: #fff; font-weight: 600; }
+
+.stepper { display: flex; overflow-x: auto; background: var(--ink-soft); padding: 0 8px; gap: 2px; scrollbar-width: none; }
+.stepper button { background: none; border: 0; color: #b9c6d8; padding: 10px 12px; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; }
+.stepper button[aria-current="step"] { color: #fff; border-bottom-color: var(--seal); }
+.step-label { font-family: var(--display); font-size: 18px; font-weight: 600; letter-spacing: .02em; }
+
+main { max-width: 980px; margin: 0 auto; padding: 20px 16px 48px; }
+.screen { display: none; }
+.screen.active { display: block; }
+h1 { font-family: var(--display); font-weight: 700; font-size: 38px; line-height: 1.05; margin: 4px 0 6px; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 24px; margin: 24px 0 8px; }
+.lede { color: var(--slate); max-width: 62ch; margin: 0 0 16px; }
+.acs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+.ac { font-size: 12px; font-weight: 600; color: var(--ink-soft); background: #dfe6ef; border-radius: 999px; padding: 2px 9px; }
+
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 16px; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+.field { display: flex; flex-direction: column; gap: 4px; flex: 1 1 160px; min-width: 0; }
+.field label { font-weight: 600; font-size: 14px; }
+.field input, .field select { padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: #fff; width: 100%; }
+.field.needs input, .field.needs select { border-color: var(--prompt); background: var(--prompt-soft); }
+.req { font-size: 12px; color: var(--prompt); font-weight: 600; }
+.help { font-size: 13px; color: var(--slate); }
+
+.btn { border: 0; border-radius: var(--radius-sm); padding: 11px 18px; font-weight: 700; cursor: pointer; background: var(--ink); color: #fff; }
+.btn.secondary { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+.btn:disabled { background: #b8c2ce; color: #eef1f4; cursor: not-allowed; }
+.btn.secondary:disabled { background: #f3f5f7; color: #9aa7b6; }
+.hold { font-size: 13px; color: var(--slate); margin-top: 6px; min-height: 1.2em; }
+.later { font-size: 12px; font-weight: 700; color: #7a5a17; background: var(--seal-soft); border-radius: 999px; padding: 1px 8px; margin-left: 6px; }
+
+/* sign in */
+.signin { max-width: 420px; margin: 24px auto; }
+
+/* promos */
+.promo-list { list-style: none; margin: 12px 0 0; padding: 0; }
+.promo-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+.promo-list .what { font-weight: 600; }
+.x { border: 0; background: none; color: var(--slate); font-size: 20px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: var(--radius-sm); }
+.x:hover { background: #eef1f4; color: var(--neg); }
+
+/* games */
+.tabs { display: inline-flex; background: #dfe6ef; border-radius: 999px; padding: 3px; margin-bottom: 12px; }
+.tabs button { border: 0; background: none; padding: 6px 16px; border-radius: 999px; font-weight: 600; cursor: pointer; color: var(--ink-soft); }
+.tabs button[aria-selected="true"] { background: var(--card); color: var(--ink); }
+.games { display: grid; gap: 10px; }
+.game { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 14px 16px; text-align: left; cursor: pointer; width: 100%; color: var(--ink); }
+.game:hover { border-color: var(--ink-soft); }
+.teams { font-family: var(--display); font-size: 24px; font-weight: 600; line-height: 1.1; }
+.when { font-size: 14px; color: var(--slate); }
+.status { font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: #eef1f4; color: var(--slate); white-space: nowrap; }
+.status.done { background: #e2f2ea; color: var(--pos); }
+.foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+
+/* predict: the sealed strip is the one bold element */
+.sealed { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--radius-lg); margin-bottom: 16px; color: var(--ink);
+  background: repeating-linear-gradient(-45deg, var(--seal) 0 14px, #f0bb5e 14px 28px); }
+.sealed span { background: var(--card); padding: 6px 12px; border-radius: var(--radius-sm); font-weight: 700; }
+.score { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: end; }
+.score .vs { font-family: var(--display); font-size: 22px; color: var(--slate); padding-bottom: 10px; }
+.score input { font-family: var(--display); font-size: 32px; font-weight: 700; text-align: center; padding: 6px; }
+.player { padding: 12px 0; border-top: 1px solid var(--line); }
+.player-name { font-weight: 700; margin-bottom: 6px; }
+.props { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+
+/* picks */
+.summary { display: flex; flex-wrap: wrap; gap: 24px; }
+.summary div { min-width: 120px; }
+.summary .n { font-family: var(--display); font-size: 30px; font-weight: 700; line-height: 1; }
+.summary .l { font-size: 13px; color: var(--slate); }
+.picks { width: 100%; border-collapse: collapse; }
+.picks th { text-align: left; font-size: 13px; font-weight: 600; color: var(--slate); padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.picks td { padding: 12px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.picks .rank { font-family: var(--display); font-size: 22px; font-weight: 700; color: var(--slate); width: 32px; }
+.bet { font-weight: 700; }
+.sub { font-size: 13px; color: var(--slate); }
+.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pos { color: var(--pos); font-weight: 700; }
+.neg { color: var(--neg); font-weight: 700; }
+.boost { display: inline-block; font-size: 12px; font-weight: 700; color: #7a5a17; background: var(--seal-soft); border-radius: 999px; padding: 1px 8px; margin-top: 4px; }
+details.method { margin-top: 4px; }
+details.method summary { cursor: pointer; font-weight: 600; }
+details.method ul { margin: 8px 0 0; padding-left: 20px; color: var(--ink-soft); }
+.legs { margin: 4px 0 0; padding-left: 18px; font-size: 14px; }
+.later-list { margin: 0; padding-left: 20px; color: var(--ink-soft); }
+.note { font-size: 13px; color: var(--slate); margin-top: 10px; }
+
+/* profile */
+.books { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 8px; }
+.books label { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); cursor: pointer; }
+.saved { color: var(--pos); font-weight: 600; font-size: 14px; }
+
+@media (max-width: 640px) {
+  h1 { font-size: 32px; }
+  .picks thead { display: none; }
+  .picks, .picks tbody, .picks tr, .picks td { display: block; width: 100%; }
+  .picks tr { border-bottom: 1px solid var(--line); padding: 10px 0; display: grid; grid-template-columns: 32px 1fr auto; gap: 2px 10px; }
+  .picks td { border: 0; padding: 0; }
+  .picks td.rank { grid-row: span 3; }
+  .picks td.c-ev, .picks td.c-stake { grid-column: 3; text-align: right; }
+  .picks td.c-book { grid-column: 2; }
+  .score input { font-size: 26px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="brand"><span class="eye" aria-hidden="true"></span>Blind Picks</div>
+  <div class="who">Signed in as <strong>jackson</strong></div>
+</header>
+
+<nav class="stepper" aria-label="Screens">
+  <button data-go="1" aria-current="step"><span class="step-label">Sign in</span></button>
+  <button data-go="2"><span class="step-label">Promos</span></button>
+  <button data-go="3"><span class="step-label">Games</span></button>
+  <button data-go="4"><span class="step-label">Predict</span></button>
+  <button data-go="5"><span class="step-label">Picks</span></button>
+  <button data-go="6"><span class="step-label">Profile</span></button>
+</nav>
+
+<main>
+
+<!-- 1 Sign in -->
+<section class="screen active" data-screen="1">
+  <div class="signin panel">
+    <div class="acs"><span class="ac">AC 1 sign-up and sign-in</span><span class="ac">AC 2 hashed passwords</span><span class="ac">AC 3 signed-out sees nothing else</span></div>
+    <h1>Sign in</h1>
+    <p class="lede">Make your picks before you see a single line.</p>
+    <div class="field"><label for="em">Email</label><input id="em" type="email" placeholder="you@example.com" autocomplete="email"></div>
+    <div class="field" style="margin-top:12px"><label for="pw">Password</label>
+      <div class="row" style="flex-wrap:nowrap"><input id="pw" type="password" placeholder="Your password" style="flex:1">
+      <button class="btn secondary" type="button" data-show="pw" aria-label="Show password" title="Show password">Show</button></div></div>
+    <div style="margin-top:16px" class="row"><button class="btn" data-go="2" id="signin-btn" disabled>Sign in</button><button class="btn secondary" type="button">Create an account</button></div>
+    <div class="hold" id="signin-hold">Enter your email and password to sign in.</div>
+  </div>
+</section>
+
+<!-- 2 Promos -->
+<section class="screen" data-screen="2">
+  <div class="acs"><span class="ac">AC 6 promos entered at session start</span><span class="ac">AC 7 no promo feed exists, so promos are yours</span></div>
+  <h1>Today's promos</h1>
+  <p class="lede">Add any profit boosts you have before you predict. They are applied to your picks at the end. This step is optional.</p>
+  <div class="panel">
+    <div class="row">
+      <div class="field needs" id="f-book"><label for="pbook">Sportsbook <span class="req">Required</span></label>
+        <select id="pbook"><option value="">Choose a book</option><option>FanDuel</option><option>DraftKings</option><option>BetMGM</option><option>Caesars</option></select></div>
+      <div class="field needs" id="f-pct"><label for="ppct">Profit boost % <span class="req">Required</span></label><input id="ppct" inputmode="numeric" placeholder="e.g. 25"></div>
+      <div class="field"><label for="pmax">Max stake ($)</label><input id="pmax" inputmode="decimal" placeholder="e.g. 25"></div>
+    </div>
+    <div class="help">One boost per book per session. It is applied to the best single bet at that book, up to the max stake.</div>
+    <div class="row" style="margin-top:12px;align-items:center">
+      <button class="btn" id="add-promo" disabled>Add promo</button>
+      <button class="btn secondary" disabled title="Reading promos from a screenshot is in a later version">Upload a screenshot<span class="later">later version</span></button>
+    </div>
+    <div class="hold" id="promo-hold">Choose a sportsbook and enter the boost % to add a promo.</div>
+    <ul class="promo-list" id="promos">
+      <li><span><span class="what">FanDuel</span> - 25% profit boost, max stake $25</span><button class="x" aria-label="Remove FanDuel promo" title="Remove this promo">&times;</button></li>
+    </ul>
+  </div>
+  <div class="foot"><span class="help">Promos are kept for this session only.</span><button class="btn" data-go="3">Start predicting</button></div>
+</section>
+
+<!-- 3 Games -->
+<section class="screen" data-screen="3">
+  <div class="acs"><span class="ac">AC 8 NFL and NBA schedule from The Odds API</span><span class="ac">AC 11 no odds shown</span></div>
+  <h1>Pick a game</h1>
+  <p class="lede">Upcoming games for the next seven days, in your time zone. No lines here, only matchups.</p>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="nfl">NFL</button>
+    <button role="tab" aria-selected="false" data-tab="nba">NBA</button>
+  </div>
+  <div class="games" data-list="nfl">
+    <button class="game" data-go="4"><span><span class="teams">Bears at Seahawks</span><br><span class="when">Sun 11/08/2026, 1:25 PM</span></span><span class="status done">Predicted</span></button>
+    <button class="game" data-go="4"><span><span class="teams">Lions at Packers</span><br><span class="when">Sun 11/08/2026, 10:00 AM</span></span><span class="status">Not predicted</span></button>
+    <button class="game" data-go="4"><span><span class="teams">Chiefs at Bills</span><br><span class="when">Sun 11/08/2026, 5:20 PM</span></span><span class="status">Not predicted</span></button>
+  </div>
+  <div class="games" data-list="nba" hidden>
+    <button class="game" data-go="4"><span><span class="teams">Lakers at Celtics</span><br><span class="when">Thu 11/05/2026, 4:30 PM</span></span><span class="status done">Predicted</span></button>
+    <button class="game" data-go="4"><span><span class="teams">Nuggets at Suns</span><br><span class="when">Thu 11/05/2026, 7:00 PM</span></span><span class="status done">Predicted</span></button>
+    <button class="game" data-go="4"><span><span class="teams">Knicks at Heat</span><br><span class="when">Fri 11/06/2026, 4:30 PM</span></span><span class="status">Not predicted</span></button>
+  </div>
+  <div class="foot"><span class="help">3 games predicted this session.</span><button class="btn" data-go="5">Submit and see my picks</button></div>
+</section>
+
+<!-- 4 Predict -->
+<section class="screen" data-screen="4">
+  <div class="acs"><span class="ac">AC 9 final score and player props</span><span class="ac">AC 10 blank fields are skipped</span><span class="ac">AC 11 no odds shown</span></div>
+  <h1>Bears at Seahawks</h1>
+  <p class="lede">Sun 11/08/2026, 1:25 PM. Fill in what you have a view on and leave the rest blank.</p>
+  <div class="sealed"><span>Odds stay sealed until you submit</span></div>
+
+  <div class="panel">
+    <h2 style="margin-top:0">Final score</h2>
+    <div class="score">
+      <div class="field"><label for="s-away">Bears</label><input id="s-away" inputmode="numeric" value="24"></div>
+      <div class="vs">at</div>
+      <div class="field"><label for="s-home">Seahawks</label><input id="s-home" inputmode="numeric" value="23"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2 style="margin-top:0">Player stats</h2>
+    <p class="help" style="margin-top:0">Whole numbers. Players are the ones sportsbooks are offering stats for in this game.</p>
+    <div class="player"><div class="player-name">Caleb Williams, QB</div>
+      <div class="props">
+        <div class="field"><label for="p1">Passing TDs</label><input id="p1" inputmode="numeric" value="2"></div>
+        <div class="field"><label for="p2">Passing yards</label><input id="p2" inputmode="numeric" value="250"></div>
+        <div class="field"><label for="p3">Rushing yards</label><input id="p3" inputmode="numeric" placeholder="-"></div>
+      </div></div>
+    <div class="player"><div class="player-name">DJ Moore, WR</div>
+      <div class="props">
+        <div class="field"><label for="p4">Receptions</label><input id="p4" inputmode="numeric" placeholder="-"></div>
+        <div class="field"><label for="p5">Receiving yards</label><input id="p5" inputmode="numeric" placeholder="-"></div>
+      </div></div>
+    <div class="player"><div class="player-name">Kenneth Walker III, RB</div>
+      <div class="props">
+        <div class="field"><label for="p6">Rushing yards</label><input id="p6" inputmode="numeric" placeholder="-"></div>
+      </div></div>
+    <p class="note">Ranges such as 1-4 and a confidence slider are in a later version.</p>
+  </div>
+  <div class="foot"><button class="btn secondary" data-go="3">Back to games</button><button class="btn" data-go="3">Save prediction</button></div>
+</section>
+
+<!-- 5 Picks -->
+<section class="screen" data-screen="5">
+  <div class="acs"><span class="ac">AC 12 ranked bets with book, promo, EV and stake</span><span class="ac">AC 13 parlays up to 6 legs</span><span class="ac">AC 15 saved after restart</span></div>
+  <h1>Your picks</h1>
+  <p class="lede">Session of Thu 11/05/2026, 3 games. Only bets where your prediction beats the market are listed, best first. This app gives information only and places no bets.</p>
+
+  <div class="panel summary">
+    <div><div class="n num">$500</div><div class="l">Bankroll</div></div>
+    <div><div class="n num">8</div><div class="l">Bets with an edge</div></div>
+    <div><div class="n num">2</div><div class="l">Bets skipped, no edge</div></div>
+  </div>
+
+  <div class="panel">
+    <h2 style="margin-top:0">Single bets</h2>
+    <table class="picks">
+      <thead><tr><th></th><th>Bet</th><th>Best book and price</th><th>Expected value</th><th>Suggested stake</th></tr></thead>
+      <tbody>
+        <tr><td class="rank">1</td><td><div class="bet">Caleb Williams over 1.5 passing TDs</div><div class="sub">Bears at Seahawks. Your chance: 59.4%</div><span class="boost">FanDuel 25% boost applied</span></td><td class="c-book num">FanDuel +131<div class="sub">+105 before boost</div></td><td class="c-ev num pos">+37.4%</td><td class="c-stake num">$25.00<div class="sub">5.0%</div></td></tr>
+        <tr><td class="rank">2</td><td><div class="bet">Bears moneyline</div><div class="sub">Bears at Seahawks. Your chance: 53.0%</div></td><td class="c-book num">FanDuel +125</td><td class="c-ev num pos">+19.1%</td><td class="c-stake num">$19.14<div class="sub">3.8%</div></td></tr>
+        <tr><td class="rank">3</td><td><div class="bet">Over 44.5 points</div><div class="sub">Bears at Seahawks. Your chance: 59.9%</div></td><td class="c-book num">BetMGM -108</td><td class="c-ev num pos">+15.3%</td><td class="c-stake num">$20.66<div class="sub">4.1%</div></td></tr>
+        <tr><td class="rank">4</td><td><div class="bet">Bears +2.5</div><div class="sub">Bears at Seahawks. Your chance: 60.2%</div></td><td class="c-book num">DraftKings -110</td><td class="c-ev num pos">+15.0%</td><td class="c-stake num">$20.60<div class="sub">4.1%</div></td></tr>
+        <tr><td class="rank">5</td><td><div class="bet">Jayson Tatum over 27.5 points</div><div class="sub">Lakers at Celtics. Your chance: 59.9%</div></td><td class="c-book num">FanDuel -112</td><td class="c-ev num pos">+13.3%</td><td class="c-stake num">$18.66<div class="sub">3.7%</div></td></tr>
+        <tr><td class="rank">6</td><td><div class="bet">Nuggets -1.5</div><div class="sub">Nuggets at Suns. Your chance: 55.0%</div></td><td class="c-book num">Caesars -105</td><td class="c-ev num pos">+7.3%</td><td class="c-stake num">$9.62<div class="sub">1.9%</div></td></tr>
+        <tr><td class="rank">7</td><td><div class="bet">Caleb Williams over 239.5 passing yards</div><div class="sub">Bears at Seahawks. Your chance: 56.9%</div></td><td class="c-book num">Caesars -115</td><td class="c-ev num pos">+6.5%</td><td class="c-stake num">$9.29<div class="sub">1.9%</div></td></tr>
+        <tr><td class="rank">8</td><td><div class="bet">Celtics moneyline</div><div class="sub">Lakers at Celtics. Your chance: 66.2%</div></td><td class="c-book num">DraftKings -180</td><td class="c-ev num pos">+2.9%</td><td class="c-stake num">$6.54<div class="sub">1.3%</div></td></tr>
+      </tbody>
+    </table>
+    <p class="note">Skipped, no edge at any of your books: Celtics -4.5 (<span class="neg">-1.4%</span>), Nikola Jokic over 11.5 assists (<span class="neg">-7.4%</span>).</p>
+  </div>
+
+  <div class="panel">
+    <h2 style="margin-top:0">Parlays</h2>
+    <p class="help" style="margin-top:0">Built from the bets above, one leg per game, priced at one sportsbook that offers every leg. Up to 6 legs; on equal value, fewer legs first.</p>
+    <table class="picks">
+      <thead><tr><th></th><th>Parlay</th><th>Book and price</th><th>Expected value</th><th>Suggested stake</th></tr></thead>
+      <tbody>
+        <tr><td class="rank">1</td><td><div class="bet">3 legs</div><ul class="legs"><li>Caleb Williams over 1.5 passing TDs</li><li>Jayson Tatum over 27.5 points</li><li>Nuggets -1.5</li></ul><div class="sub">Your chance: 19.6%</div></td><td class="c-book num">FanDuel +641</td><td class="c-ev num pos">+45.0%</td><td class="c-stake num">$8.78<div class="sub">1.8%</div></td></tr>
+        <tr><td class="rank">2</td><td><div class="bet">2 legs</div><ul class="legs"><li>Caleb Williams over 1.5 passing TDs</li><li>Jayson Tatum over 27.5 points</li></ul><div class="sub">Your chance: 35.6%</div></td><td class="c-book num">FanDuel +288</td><td class="c-ev num pos">+38.1%</td><td class="c-stake num">$16.48<div class="sub">3.3%</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <details class="method"><summary>How these numbers are worked out</summary>
+      <ul>
+        <li>Your predicted score gives a margin and a total. Your chance of a moneyline, spread or total bet winning assumes the real result lands around your prediction, spread out the way NFL and NBA results usually are.</li>
+        <li>Touchdowns, receptions, rebounds, assists and threes are counts, worked out with a standard model for counts. Yards and points use the same spread-out model as the score.</li>
+        <li>Expected value is your chance times the payout at the best price among your books, minus your stake. A boost raises the payout.</li>
+        <li>The suggested stake is a quarter of the Kelly amount, never more than 5% of your bankroll.</li>
+        <li>Parlay legs are treated as independent, which is why each leg comes from a different game.</li>
+      </ul>
+    </details>
+  </div>
+
+  <div class="panel">
+    <h2 style="margin-top:0">In a later version</h2>
+    <ul class="later-list">
+      <li>DFS lineups for DraftKings and FanDuel</li>
+      <li>Reading promos from screenshots</li>
+      <li>Ranges such as 1-4, and a confidence slider</li>
+      <li>More stat types, and parlays with several legs from the same game</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 6 Profile -->
+<section class="screen" data-screen="6">
+  <div class="acs"><span class="ac">AC 5 bankroll saved between sessions</span><span class="ac">AC 12 best book among your books</span><span class="ac">AC 4 only you see your data</span></div>
+  <h1>Profile</h1>
+  <p class="lede">Your bankroll sizes every suggested stake. Picks only use the sportsbooks you tick.</p>
+  <div class="panel">
+    <div class="field" style="max-width:240px"><label for="bank">Bankroll ($)</label><input id="bank" inputmode="decimal" value="500"></div>
+    <h2>My sportsbooks</h2>
+    <div class="books">
+      <label><input type="checkbox" checked> FanDuel</label>
+      <label><input type="checkbox" checked> DraftKings</label>
+      <label><input type="checkbox" checked> BetMGM</label>
+      <label><input type="checkbox" checked> Caesars</label>
+      <label><input type="checkbox"> ESPN BET</label>
+      <label><input type="checkbox"> Fanatics</label>
+      <label><input type="checkbox"> BetRivers</label>
+      <label><input type="checkbox"> Hard Rock Bet</label>
+    </div>
+    <div class="row" style="margin-top:16px;align-items:center"><button class="btn" id="save-profile">Save profile</button><span class="saved" id="saved" hidden>Profile saved</span></div>
+  </div>
+</section>
+
+</main>
+
+<script>
+(function () {
+  var steps = document.querySelectorAll('.stepper button');
+  function go(n) {
+    document.querySelectorAll('.screen').forEach(function (s) { s.classList.toggle('active', s.dataset.screen === String(n)); });
+    steps.forEach(function (b) { if (b.dataset.go === String(n)) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); });
+    window.scrollTo(0, 0);
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-go]');
+    if (t && !t.disabled) go(t.dataset.go);
+  });
+
+  // sign in: button live only when both fields are filled
+  var em = document.getElementById('em'), pw = document.getElementById('pw'), sb = document.getElementById('signin-btn'), sh = document.getElementById('signin-hold');
+  function checkSignin() {
+    var ok = em.value.trim() && pw.value;
+    sb.disabled = !ok;
+    sh.textContent = ok ? '' : 'Enter your email and password to sign in.';
+  }
+  em.addEventListener('input', checkSignin); pw.addEventListener('input', checkSignin);
+  document.querySelectorAll('[data-show]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var i = document.getElementById(b.dataset.show), show = i.type === 'password';
+      i.type = show ? 'text' : 'password';
+      b.textContent = show ? 'Hide' : 'Show';
+      b.setAttribute('aria-label', (show ? 'Hide' : 'Show') + ' password'); b.title = b.getAttribute('aria-label');
+    });
+  });
+
+  // promos
+  var pbook = document.getElementById('pbook'), ppct = document.getElementById('ppct'), pmax = document.getElementById('pmax'),
+      add = document.getElementById('add-promo'), hold = document.getElementById('promo-hold'), list = document.getElementById('promos');
+  function checkPromo() {
+    var pct = parseInt(ppct.value, 10);
+    document.getElementById('f-book').classList.toggle('needs', !pbook.value);
+    document.getElementById('f-pct').classList.toggle('needs', !ppct.value);
+    var ok = pbook.value && pct > 0 && pct <= 100;
+    add.disabled = !ok;
+    hold.textContent = ok ? '' : (!pbook.value ? 'Choose a sportsbook' : 'Enter a boost between 1 and 100') + ' to add a promo.';
+  }
+  [pbook, ppct].forEach(function (el) { el.addEventListener('input', checkPromo); el.addEventListener('change', checkPromo); });
+  add.addEventListener('click', function () {
+    var li = document.createElement('li'), max = pmax.value ? ', max stake $' + pmax.value : '';
+    li.innerHTML = '<span><span class="what"></span> - ' + parseInt(ppct.value, 10) + '% profit boost' + max + '</span><button class="x" title="Remove this promo">&times;</button>';
+    li.querySelector('.what').textContent = pbook.value;
+    li.querySelector('.x').setAttribute('aria-label', 'Remove ' + pbook.value + ' promo');
+    list.appendChild(li);
+    pbook.value = ''; ppct.value = ''; pmax.value = ''; checkPromo();
+  });
+  list.addEventListener('click', function (e) { var x = e.target.closest('.x'); if (x) x.closest('li').remove(); });
+
+  // tabs
+  document.querySelectorAll('[data-tab]').forEach(function (t) {
+    t.addEventListener('click', function () {
+      document.querySelectorAll('[data-tab]').forEach(function (o) { o.setAttribute('aria-selected', o === t ? 'true' : 'false'); });
+      document.querySelectorAll('[data-list]').forEach(function (l) { l.hidden = l.dataset.list !== t.dataset.tab; });
+    });
+  });
+
+  // profile save confirmation
+  var save = document.getElementById('save-profile'), saved = document.getElementById('saved');
+  save.addEventListener('click', function () {
+    save.disabled = true; save.textContent = 'Saving...';
+    setTimeout(function () { save.disabled = false; save.textContent = 'Save profile'; saved.hidden = false; }, 600);
+  });
+})();
+</script>
+</body>
+</html>
